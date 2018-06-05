@@ -8,7 +8,7 @@ import lejos.hardware.lcd.TextLCD;
 import lejos.utility.Delay;
 
 public class Marvin {
-	//test
+	
 	Brick brick;
 	
 	public Marvin() {
