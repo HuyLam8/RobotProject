@@ -91,20 +91,12 @@ public class FollowBeaconLauncher {
 
 					// if found stop and initiate claw motor to pick up object
 					// closest distance value is 1
-<<<<<<< HEAD
-				} else {
-					left.stop();
-					right.stop();
-					Sound.twoBeeps();
-					newGrip.closeGrip(claw);
-					newGrip.openGrip(claw);
-=======
 					if (distance == MIN_DISTANCE) {
 						left.stop();
 						right.stop();
 						newGrip.closeGrip(claw);
-				} 
->>>>>>> Opdracht2
+						newGrip.openGrip(claw);
+					}
 				}
 			}
 		}
