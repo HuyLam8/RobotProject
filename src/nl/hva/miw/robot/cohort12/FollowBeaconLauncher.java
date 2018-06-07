@@ -22,7 +22,7 @@ import lejos.hardware.sensor.SensorMode;
 public class FollowBeaconLauncher {
 
 	private static final int ZERO = 0;
-	private static final int TEST = -2;
+	private static final int DEVIATION = -2;
 	private static final int MIN_DISTANCE = 15;
 	private static final int MAX_DISTANCE = 100;
 
@@ -30,8 +30,8 @@ public class FollowBeaconLauncher {
 	UnregulatedMotor left = new UnregulatedMotor(MotorPort.C);
 	UnregulatedMotor right = new UnregulatedMotor(MotorPort.D);
 	UnregulatedMotor claw = new UnregulatedMotor(MotorPort.A);
+	UnregulatedMotor head = new UnregulatedMotor(MotorPort.B);
 	Grip newGrip = new Grip();
-	// UnregulatedMotor head = new UnregulatedMotor(MotorPort.B);
 
 	SensorMode seekBeacon = infrared.getSeekMode();
 	float[] sample = new float[seekBeacon.sampleSize()];
@@ -63,29 +63,33 @@ public class FollowBeaconLauncher {
 			int direction = (int) sample[0];
 			System.out.println("Direction: " + direction);
 			// display.drawString("Direction: " + direction, 0, 3);
-			 int distance = (int) sample[1];
+			int distance = (int) sample[1];
 			System.out.println("Distance: " + distance);
 
-			if (direction == 0 && distance >= 100)  {
+			// if beacon too far it will drive forward
+			if (direction == 0 && distance >= 100) {
 				left.setPower(40);
 				right.setPower(40);
 			}
 			// move to the right
-			else if (direction > TEST) {
+			else if (direction > DEVIATION) {
 				left.setPower(40);
 				right.setPower(-10);
-				// head.setPower(40);
+				// gear will turn the head the opposite direction
+				head.setPower(-40);
 
 				// move to the left
-			} else if (direction < TEST) {
+			} else if (direction < DEVIATION) {
 				left.setPower(-10);
 				right.setPower(40);
-				// head.setPower(40);
+				// gear will turn the head the opposite direction
+				head.setPower(40);
 
-				// if beacon is right in front of the IR sensor stop turning
-			} else if (direction == TEST) {
+				// if beacon is right in front of IR sensor, stop turning head and drive forward
+			} else if (direction == DEVIATION) {
 				left.setPower(40);
 				right.setPower(40);
+				head.setPower(0);
 				if (distance > ZERO && distance <= MIN_DISTANCE) {
 					left.stop();
 					right.stop();
@@ -95,7 +99,6 @@ public class FollowBeaconLauncher {
 					newGrip.openGrip(claw);
 					break;
 				}
-				// head.setPower(0);
 
 				// after checking direction sample value for the conditions continue to check
 				// conditions for distance sample value
@@ -104,13 +107,13 @@ public class FollowBeaconLauncher {
 				// closest distance value is 1
 			}
 		}
-//
-//		if (distance == MIN_DISTANCE) {
-//			left.stop();
-//			right.stop();
-//			Sound.beepSequenceUp();
-//			newGrip.closeGrip(claw);
-//		}
+		//
+		// if (distance == MIN_DISTANCE) {
+		// left.stop();
+		// right.stop();
+		// Sound.beepSequenceUp();
+		// newGrip.closeGrip(claw);
+		// }
 
 		// free motor and sensor resources
 		left.close();
