@@ -84,8 +84,6 @@ public class FollowBeaconLauncher {
 				// conditions for distance sample value
 				// if not found keep on going forward until found
 				while (distance > MIN_DISTANCE || distance < MAX_DISTANCE) {
-					System.out.println("I have found my beacon!");
-					Sound.beepSequenceUp();
 					left.setPower(40);
 					right.setPower(40);
 
@@ -94,6 +92,8 @@ public class FollowBeaconLauncher {
 					if (distance == MIN_DISTANCE) {
 						left.stop();
 						right.stop();
+						System.out.println("I have found my beacon!");
+						Sound.twoBeeps();
 						newGrip.closeGrip(claw);
 						newGrip.openGrip(claw);
 					}
