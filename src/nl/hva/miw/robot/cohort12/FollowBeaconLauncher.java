@@ -23,13 +23,13 @@ public class FollowBeaconLauncher {
 
 	private static final int MIN_DISTANCE = 5;
 	private static final int MAX_DISTANCE = 100;
-	
+
 	EV3IRSensor infrared = new EV3IRSensor(SensorPort.S1);
 	UnregulatedMotor left = new UnregulatedMotor(MotorPort.C);
 	UnregulatedMotor right = new UnregulatedMotor(MotorPort.D);
 	UnregulatedMotor claws = new UnregulatedMotor(MotorPort.A);
-//	UnregulatedMotor head = new UnregulatedMotor(MotorPort.B);
-	
+	// UnregulatedMotor head = new UnregulatedMotor(MotorPort.B);
+
 	SensorMode seekBeacon = infrared.getSeekMode();
 	float[] sample = new float[seekBeacon.sampleSize()];
 	// Brick brick;
@@ -65,19 +65,19 @@ public class FollowBeaconLauncher {
 			if (direction > 0) {
 				left.setPower(40);
 				right.setPower(-10);
-//				head.setPower(40);
+				// head.setPower(40);
 
 				// move to the left
 			} else if (direction < 0) {
 				left.setPower(-10);
 				right.setPower(40);
-//				head.setPower(40);
+				// head.setPower(40);
 
 				// if beacon is right in front of the IR sensor stop turning
 			} else if (direction == 0) {
 				left.setPower(0);
 				right.setPower(0);
-//				head.setPower(0);
+				// head.setPower(0);
 
 				// after checking direction sample value for the conditions continue to check
 				// conditions for distance sample value
