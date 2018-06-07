@@ -2,11 +2,14 @@ package nl.hva.miw.robot.cohort12;
 
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
+import lejos.hardware.motor.EV3MediumRegulatedMotor;
 import lejos.hardware.motor.UnregulatedMotor;
 import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.SensorPort;
 import lejos.hardware.sensor.EV3IRSensor;
 import lejos.hardware.sensor.SensorMode;
+import lejos.robotics.RegulatedMotor;
+import lejos.utility.Delay;
 
 /**
  * This class is for implementing the code for the Infrared Sensor on the Lego
@@ -30,7 +33,7 @@ public class FollowBeaconLauncher {
 	UnregulatedMotor left = new UnregulatedMotor(MotorPort.C);
 	UnregulatedMotor right = new UnregulatedMotor(MotorPort.D);
 	UnregulatedMotor claw = new UnregulatedMotor(MotorPort.A);
-	UnregulatedMotor head = new UnregulatedMotor(MotorPort.B);
+	RegulatedMotor head = new EV3MediumRegulatedMotor(MotorPort.B);
 	Grip newGrip = new Grip();
 
 	SensorMode seekBeacon = infrared.getSeekMode();
@@ -65,31 +68,33 @@ public class FollowBeaconLauncher {
 			// display.drawString("Direction: " + direction, 0, 3);
 			int distance = (int) sample[1];
 			System.out.println("Distance: " + distance);
+			
+			
 
 			// if beacon too far it will drive forward
 			if (direction == 0 && distance >= 100) {
-				left.setPower(40);
-				right.setPower(40);
+//				left.setPower(40);
+//				right.setPower(40);
 			}
 			// move to the right
 			else if (direction > DEVIATION) {
-				left.setPower(40);
-				right.setPower(-10);
+//				left.setPower(40);
+//				right.setPower(-10);
 				// gear will turn the head the opposite direction
-				head.setPower(-40);
+				head.forward();
 
 				// move to the left
 			} else if (direction < DEVIATION) {
-				left.setPower(-10);
-				right.setPower(40);
+//				left.setPower(-10);
+//				right.setPower(40);
 				// gear will turn the head the opposite direction
-				head.setPower(40);
+				head.backward();
 
 				// if beacon is right in front of IR sensor, stop turning head and drive forward
-			} else if (direction == DEVIATION) {
-				left.setPower(40);
-				right.setPower(40);
-				head.setPower(0);
+			} else if (direction <= 0 && direction == DEVIATION) {
+//				left.setPower(40);
+//				right.setPower(40);
+				head.stop();
 				if (distance > ZERO && distance <= MIN_DISTANCE) {
 					left.stop();
 					right.stop();
