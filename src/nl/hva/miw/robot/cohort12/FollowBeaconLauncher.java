@@ -82,9 +82,8 @@ public class FollowBeaconLauncher {
 
 				// after checking direction sample value for the conditions continue to check
 				// conditions for distance sample value
-			} else {
 				// if not found keep on going forward until found
-				if (distance > MIN_DISTANCE || distance < MAX_DISTANCE) {
+				while (distance > MIN_DISTANCE || distance < MAX_DISTANCE) {
 					System.out.println("I have found my beacon!");
 					Sound.beepSequenceUp();
 					left.setPower(40);
@@ -92,12 +91,20 @@ public class FollowBeaconLauncher {
 
 					// if found stop and initiate claw motor to pick up object
 					// closest distance value is 1
+<<<<<<< HEAD
 				} else {
 					left.stop();
 					right.stop();
 					Sound.twoBeeps();
 					newGrip.closeGrip(claw);
 					newGrip.openGrip(claw);
+=======
+					if (distance == MIN_DISTANCE) {
+						left.stop();
+						right.stop();
+						newGrip.closeGrip(claw);
+				} 
+>>>>>>> Opdracht2
 				}
 			}
 		}
