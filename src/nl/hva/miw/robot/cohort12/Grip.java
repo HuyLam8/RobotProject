@@ -12,13 +12,13 @@ public class Grip {
 		super();
 	}
 
-	public void openGrip() {
+	public void openGrip(UnregulatedMotor motorVanGrip) {
 		motorVanGrip.backward(); 
 		motorVanGrip.setPower(40);
 		Delay.msDelay(3000);
 	}
 	
-	public void closeGrip() {
+	public void closeGrip(UnregulatedMotor motorVanGrip) {
 		motorVanGrip.forward(); 
 		motorVanGrip.setPower(40);
 		Delay.msDelay(3000);
