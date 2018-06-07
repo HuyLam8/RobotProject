@@ -5,8 +5,6 @@ import lejos.hardware.port.MotorPort;
 import lejos.utility.Delay;
 
 public class Grip {
-	
-	UnregulatedMotor motorVanGrip = new UnregulatedMotor(MotorPort.A);
 		
 	public Grip() {
 		super();
