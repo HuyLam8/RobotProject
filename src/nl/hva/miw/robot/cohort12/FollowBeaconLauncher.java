@@ -50,16 +50,18 @@ public class FollowBeaconLauncher {
 		test.seekBeacon();
 	}
 
+	int distance = (int) sample[1];
+
 	public void seekBeacon() {
 
-		while (Button.ESCAPE.isUp()) {
+		while (Button.ESCAPE.isUp() || distance > MIN_DISTANCE || distance < MAX_DISTANCE) {
 			// reads bearing and distance every second
 			seekBeacon.fetchSample(sample, 0);
 			// one pair has 2 elements, in this case: bearing and distance
 			int direction = (int) sample[0];
 			System.out.println("Direction: " + direction);
 			// display.drawString("Direction: " + direction, 0, 3);
-			int distance = (int) sample[1];
+			// int distance = (int) sample[1];
 			System.out.println("Distance: " + distance);
 
 			// move to the right
@@ -78,11 +80,15 @@ public class FollowBeaconLauncher {
 			} else if (direction == 0) {
 				left.setPower(0);
 				right.setPower(0);
+				System.out.println("I have found my beacon!");
+				left.setPower(40);
+				right.setPower(40);
 				// head.setPower(0);
 
 				// after checking direction sample value for the conditions continue to check
 				// conditions for distance sample value
 				// if not found keep on going forward until found
+<<<<<<< HEAD
 				while (distance > MIN_DISTANCE || distance < MAX_DISTANCE) {
 					left.setPower(40);
 					right.setPower(40);
@@ -98,12 +104,25 @@ public class FollowBeaconLauncher {
 						newGrip.openGrip(claw);
 					}
 				}
+=======
+				// if found stop and initiate claw motor to pick up object
+				// closest distance value is 1
+>>>>>>> Opdracht2
 			}
 		}
+
+		if (distance == MIN_DISTANCE) {
+			left.stop();
+			right.stop();
+			Sound.beepSequenceUp();
+			newGrip.closeGrip(claw);
+		}
+
 		// free motor and sensor resources
 		left.close();
 		right.close();
 		claw.close();
 		infrared.close();
+
 	}
 }
