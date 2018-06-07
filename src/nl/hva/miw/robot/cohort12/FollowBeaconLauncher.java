@@ -27,6 +27,7 @@ public class FollowBeaconLauncher {
 	EV3IRSensor infrared = new EV3IRSensor(SensorPort.S1);
 	UnregulatedMotor left = new UnregulatedMotor(MotorPort.C);
 	UnregulatedMotor right = new UnregulatedMotor(MotorPort.D);
+	UnregulatedMotor claw = new UnregulatedMotor(MotorPort.A);
 	Grip newGrip = new Grip();
 	// UnregulatedMotor head = new UnregulatedMotor(MotorPort.B);
 
@@ -94,7 +95,7 @@ public class FollowBeaconLauncher {
 				} else {
 					left.stop();
 					right.stop();
-					newGrip.closeGrip();
+					newGrip.closeGrip(claw);
 				}
 			}
 		}
