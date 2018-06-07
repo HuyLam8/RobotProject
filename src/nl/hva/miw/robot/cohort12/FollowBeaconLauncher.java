@@ -95,13 +95,16 @@ public class FollowBeaconLauncher {
 				} else {
 					left.stop();
 					right.stop();
+					Sound.twoBeeps();
 					newGrip.closeGrip(claw);
+					newGrip.openGrip(claw);
 				}
 			}
 		}
 		// free motor and sensor resources
 		left.close();
 		right.close();
+		claw.close();
 		infrared.close();
 	}
 }
