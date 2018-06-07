@@ -21,7 +21,9 @@ import lejos.hardware.sensor.SensorMode;
  */
 public class FollowBeaconLauncher {
 
-	private static final int MIN_DISTANCE = 5;
+	private static final int ZERO = 0;
+	private static final int TEST = -2;
+	private static final int MIN_DISTANCE = 15;
 	private static final int MAX_DISTANCE = 100;
 
 	EV3IRSensor infrared = new EV3IRSensor(SensorPort.S1);
@@ -50,39 +52,49 @@ public class FollowBeaconLauncher {
 		test.seekBeacon();
 	}
 
-	int distance = (int) sample[1];
+	int distance;
 
 	public void seekBeacon() {
 
-		while (Button.ESCAPE.isUp() || distance > MIN_DISTANCE || distance < MAX_DISTANCE) {
+		while (Button.ESCAPE.isUp() || (distance > MIN_DISTANCE && distance < MAX_DISTANCE)) {
 			// reads bearing and distance every second
 			seekBeacon.fetchSample(sample, 0);
 			// one pair has 2 elements, in this case: bearing and distance
 			int direction = (int) sample[0];
 			System.out.println("Direction: " + direction);
 			// display.drawString("Direction: " + direction, 0, 3);
-			// int distance = (int) sample[1];
+			 int distance = (int) sample[1];
 			System.out.println("Distance: " + distance);
 
+			if (direction == 0 && distance >= 100)  {
+				left.setPower(40);
+				right.setPower(40);
+			}
 			// move to the right
-			if (direction > 0) {
+			else if (direction > TEST) {
 				left.setPower(40);
 				right.setPower(-10);
 				// head.setPower(40);
 
 				// move to the left
-			} else if (direction < 0) {
+			} else if (direction < TEST) {
 				left.setPower(-10);
 				right.setPower(40);
 				// head.setPower(40);
 
 				// if beacon is right in front of the IR sensor stop turning
-			} else if (direction == 0) {
-				left.setPower(0);
-				right.setPower(0);
-				System.out.println("I have found my beacon!");
+			} else if (direction == TEST) {
 				left.setPower(40);
 				right.setPower(40);
+				if (distance > ZERO && distance <= MIN_DISTANCE) {
+					left.stop();
+					right.stop();
+					Sound.beepSequenceUp();
+					System.out.println("I have found my beacon!");
+					newGrip.closeGrip(claw);
+					newGrip.openGrip(claw);
+					break;
+				}
 				// head.setPower(0);
 
 				// after checking direction sample value for the conditions continue to check
@@ -92,13 +104,13 @@ public class FollowBeaconLauncher {
 				// closest distance value is 1
 			}
 		}
-
-		if (distance == MIN_DISTANCE) {
-			left.stop();
-			right.stop();
-			Sound.beepSequenceUp();
-			newGrip.closeGrip(claw);
-		}
+//
+//		if (distance == MIN_DISTANCE) {
+//			left.stop();
+//			right.stop();
+//			Sound.beepSequenceUp();
+//			newGrip.closeGrip(claw);
+//		}
 
 		// free motor and sensor resources
 		left.close();
