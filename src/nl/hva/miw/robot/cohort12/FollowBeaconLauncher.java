@@ -33,7 +33,7 @@ public class FollowBeaconLauncher {
 	UnregulatedMotor left = new UnregulatedMotor(MotorPort.C);
 	UnregulatedMotor right = new UnregulatedMotor(MotorPort.D);
 	UnregulatedMotor claw = new UnregulatedMotor(MotorPort.A);
-	RegulatedMotor head = new EV3MediumRegulatedMotor(MotorPort.B);
+	UnregulatedMotor head = new UnregulatedMotor(MotorPort.B);
 	Grip newGrip = new Grip();
 
 	SensorMode seekBeacon = infrared.getSeekMode();
@@ -61,6 +61,7 @@ public class FollowBeaconLauncher {
 
 		while (Button.ESCAPE.isUp() || (distance > MIN_DISTANCE && distance < MAX_DISTANCE)) {
 			// reads bearing and distance every second
+
 			seekBeacon.fetchSample(sample, 0);
 			// one pair has 2 elements, in this case: bearing and distance
 			int direction = (int) sample[0];
@@ -68,32 +69,29 @@ public class FollowBeaconLauncher {
 			// display.drawString("Direction: " + direction, 0, 3);
 			int distance = (int) sample[1];
 			System.out.println("Distance: " + distance);
-			
-			
 
 			// if beacon too far it will drive forward
 			if (direction == 0 && distance >= 100) {
-//				left.setPower(40);
-//				right.setPower(40);
+				// left.setPower(40);
+				// right.setPower(40);
 			}
 			// move to the right
 			else if (direction > DEVIATION) {
-//				left.setPower(40);
-//				right.setPower(-10);
+				// left.setPower(40);
+				// right.setPower(-10);
 				// gear will turn the head the opposite direction
-				head.forward();
-
+				head.setPower(10);
 				// move to the left
 			} else if (direction < DEVIATION) {
-//				left.setPower(-10);
-//				right.setPower(40);
+				// left.setPower(-10);
+				// right.setPower(40);
 				// gear will turn the head the opposite direction
-				head.backward();
+				head.setPower(-10);
 
 				// if beacon is right in front of IR sensor, stop turning head and drive forward
 			} else if (direction <= 0 && direction == DEVIATION) {
-//				left.setPower(40);
-//				right.setPower(40);
+				// left.setPower(40);
+				// right.setPower(40);
 				head.stop();
 				if (distance > ZERO && distance <= MIN_DISTANCE) {
 					left.stop();
