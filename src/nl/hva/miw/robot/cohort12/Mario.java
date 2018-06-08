@@ -7,7 +7,7 @@ import lejos.hardware.Sound;
  * Trying to play Mario theme song.
  */
 
-public class Mario {
+public class Mario implements Runnable {
 	private final static int C4 = 262;
 	private final static int D4 = 294;
 	private final static int E4 = 330;
@@ -28,11 +28,21 @@ public class Mario {
 	private final static int A5 = 880;
 
 	private final static int C6 = 1047;
+	boolean play = true;
 
-	public static void main(String[] argh) {
+	public Mario() {
+		super();
+	}
+
+	public boolean isPlay() {
+		return play;
+	}
+
+	public static void playMario() {
+
 		int vol = Sound.getVolume();
-		System.out.println("Mario!");
-		Sound.setVolume(66);
+		System.out.println("I have to find my beacon!");
+		Sound.setVolume(20);
 
 		play(E5, 100, 150);
 		play(E5, 100, 300);
@@ -42,7 +52,7 @@ public class Mario {
 		play(G5, 100, 550);
 		play(G4, 100, 575);
 
-		for (int i=0; i<2; i++) {
+		for (int i = 0; i < 4; i++) {
 			play(C5, 100, 450);
 			play(G4, 100, 400);
 			play(E4, 100, 500);
@@ -62,70 +72,21 @@ public class Mario {
 			play(B4, 80, 500);
 		}
 
-		/*
-		play(B4, 100, 300); //F
-		while (false) {
-		play(G5, 100, 100);
-		play(Fs5, 100, 150);
-		play(E5, 100, 150);
-		play(Ds5, 150, 300);
-		play(E5, 150, 300);
-		play(G4, 100, 150);
-		play(A4, 100, 150);
-		play(B4, 100, 300);
-		play(A4, 100, 150);
-		play(B4, 100, 100);
-		play(D5, 100, 225);
-		play(B4, 100, 300);
-		play(G5, 100, 100);
-		play(Fs5, 100, 150);
-		play(E5, 100, 150);
-		play(Ds5, 150, 300);
-		play(E5, 200, 300);
-		play(C6, 80, 300);
-		play(C6, 80, 150);
-		play(C6, 80, 300);
-		play(G4, 100, 300);
-		play(B4, 100, 300);
-		// Chorus 2:
-		play(G5, 100, 100);
-		play(Fs5, 100, 150);
-		play(E5, 100, 150);
-		play(Ds5, 150, 300);
-		play(E5, 150, 300);
-		play(G4, 100, 150);
-		play(A4, 100, 150);
-		play(B4, 100, 300);
-		play(A4, 100, 150);
-		play(B4, 100, 100);
-		play(D5, 100, 425);
-		// End 2
-		play(D5, 100, 450);
-		play(Cs5, 100, 425);
-		play(B4, 100, 350);
-		play(G4, 100, 300);
-		play(B4, 100, 300);
-		play(B4, 100, 150);
-		play(B4, 100, 300);
-		play(B4, 100, 300);
-		// Insert 2
-		}
-		*/
-
-		System.out.println("End.");
 		Sound.setVolume(vol);
-		Button.ESCAPE.waitForPressAndRelease();
 	}
 
 	private static void play(int freq, int dur, int delay) {
-		if (100 <= freq  && freq  <= 12000 &&
-			10  <= dur   && dur   <= 10000 &&
-			10  <= delay && delay <= 10000) {
+		if (100 <= freq && freq <= 12000 && 10 <= dur && dur <= 10000 && 10 <= delay && delay <= 10000) {
 			Sound.playTone(freq, dur);
 			try {
 				Thread.sleep(delay);
+			} catch (Exception e) {
 			}
-			catch (Exception e) {}
 		}
+	}
+
+	@Override
+	public void run() {
+		playMario();
 	}
 }
