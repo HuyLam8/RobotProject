@@ -44,32 +44,32 @@ public class Mario implements Runnable {
 		System.out.println("I have to find my beacon!");
 		Sound.setVolume(20);
 
+		play(E5, 100, 75);
 		play(E5, 100, 150);
-		play(E5, 100, 300);
-		play(E5, 100, 300);
-		play(C5, 100, 100);
-		play(E5, 100, 300);
-		play(G5, 100, 550);
-		play(G4, 100, 575);
+		play(E5, 100, 150);
+		play(C5, 100, 50);
+		play(E5, 100, 150);
+		play(G5, 100, 275);
+		play(G4, 100, 287);
 
 		for (int i = 0; i < 4; i++) {
-			play(C5, 100, 450);
-			play(G4, 100, 400);
-			play(E4, 100, 500);
-			play(A4, 100, 300);
-			play(B4, 80, 330);
-			play(As4, 100, 150);
-			play(A4, 100, 300);
+			play(C5, 100, 225);
 			play(G4, 100, 200);
-			play(E5, 80, 200);
-			play(G5, 50, 150);
-			play(A5, 100, 300);
-			play(F5, 80, 150);
-			play(G5, 50, 350);
-			play(E5, 80, 300);
-			play(C5, 80, 150);
-			play(D5, 80, 150);
-			play(B4, 80, 500);
+			play(E4, 100, 250);
+			play(A4, 100, 150);
+			play(B4, 80, 165);
+			play(As4, 100, 75);
+			play(A4, 100, 150);
+			play(G4, 100, 100);
+			play(E5, 80, 100);
+			play(G5, 50, 75);
+			play(A5, 100, 150);
+			play(F5, 80, 75);
+			play(G5, 50, 175);
+			play(E5, 80, 150);
+			play(C5, 80, 75);
+			play(D5, 80, 75);
+			play(B4, 80, 250);
 		}
 
 		Sound.setVolume(vol);

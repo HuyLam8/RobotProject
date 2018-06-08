@@ -62,9 +62,8 @@ public class FollowBeaconLauncher {
 	Thread thread = new Thread(new Mario());
 
 	public void seekBeacon() {
-
+		new Thread(new Mario()).start();
 		while (Button.ESCAPE.isUp() || (distance > MIN_DISTANCE && distance < MAX_DISTANCE)) {
-			thread.start();
 			// reads bearing and distance every second
 			seekBeacon.fetchSample(sample, 0);
 			// one pair has 2 elements, in this case: bearing and distance
@@ -102,7 +101,6 @@ public class FollowBeaconLauncher {
 				if (distance > ZERO && distance <= MIN_DISTANCE) {
 					// left.stop();
 					// right.stop();
-					Sound.beepSequenceUp();
 					Sound.setVolume(ZERO);
 					System.out.println("I have found my beacon!");
 					// newGrip.closeGrip(claw);
