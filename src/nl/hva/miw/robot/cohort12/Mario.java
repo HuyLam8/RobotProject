@@ -8,6 +8,7 @@ import lejos.hardware.Sound;
  */
 
 public class Mario implements Runnable {
+	
 	private final static int C4 = 262;
 	private final static int D4 = 294;
 	private final static int E4 = 330;
@@ -30,6 +31,7 @@ public class Mario implements Runnable {
 	private final static int C6 = 1047;
 	boolean play = true;
 
+
 	public Mario() {
 		super();
 	}
@@ -37,6 +39,10 @@ public class Mario implements Runnable {
 	public boolean isPlay() {
 		return play;
 	}
+	
+	public void terminate() {
+        play = false;
+    }
 
 	public static void playMario() {
 
@@ -52,7 +58,7 @@ public class Mario implements Runnable {
 		play(G5, 100, 275);
 		play(G4, 100, 287);
 
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 2; i++) {
 			play(C5, 100, 225);
 			play(G4, 100, 200);
 			play(E4, 100, 250);
@@ -71,11 +77,56 @@ public class Mario implements Runnable {
 			play(D5, 80, 75);
 			play(B4, 80, 250);
 		}
+		
+		play(G5, 100, 100);
+		play(Fs5, 100, 150);
+		play(E5, 100, 150);
+		play(Ds5, 150, 300);
+		play(E5, 150, 300);
+		play(G4, 100, 150);
+		play(A4, 100, 150);
+		play(B4, 100, 300);
+		play(A4, 100, 150);
+		play(B4, 100, 100);
+		play(D5, 100, 225);
+		play(B4, 100, 300);
+		play(G5, 100, 100);
+		play(Fs5, 100, 150);
+		play(E5, 100, 150);
+		play(Ds5, 150, 300);
+		play(E5, 200, 300);
+		play(C6, 80, 300);
+		play(C6, 80, 150);
+		play(C6, 80, 300);
+		play(G4, 100, 300);
+		play(B4, 100, 300);
+		// Chorus 2:
+		play(G5, 100, 100);
+		play(Fs5, 100, 150);
+		play(E5, 100, 150);
+		play(Ds5, 150, 300);
+		play(E5, 150, 300);
+		play(G4, 100, 150);
+		play(A4, 100, 150);
+		play(B4, 100, 300);
+		play(A4, 100, 150);
+		play(B4, 100, 100);
+		play(D5, 100, 425);
+		// End 2
+		play(D5, 100, 450);
+		play(Cs5, 100, 425);
+		play(B4, 100, 350);
+		play(G4, 100, 300);
+		play(B4, 100, 300);
+		play(B4, 100, 150);
+		play(B4, 100, 300);
+		play(B4, 100, 300);
+
 
 		Sound.setVolume(vol);
 	}
 
-	private static void play(int freq, int dur, int delay) {
+	protected static void play(int freq, int dur, int delay) {
 		if (100 <= freq && freq <= 12000 && 10 <= dur && dur <= 10000 && 10 <= delay && delay <= 10000) {
 			Sound.playTone(freq, dur);
 			try {

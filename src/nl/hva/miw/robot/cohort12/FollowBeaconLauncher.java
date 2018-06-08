@@ -53,7 +53,7 @@ public class FollowBeaconLauncher {
 
 		FollowBeaconLauncher test = new FollowBeaconLauncher();
 		test.seekBeacon();
-		
+
 	}
 
 	int distance;
@@ -62,18 +62,18 @@ public class FollowBeaconLauncher {
 	Thread thread = new Thread(new Mario());
 
 	public void seekBeacon() {
-		new Thread(new Mario()).start();
-		while (Button.ESCAPE.isUp() || (distance > MIN_DISTANCE && distance < MAX_DISTANCE)) {
-			// reads bearing and distance every second
-			seekBeacon.fetchSample(sample, 0);
-			// one pair has 2 elements, in this case: bearing and distance
-			int direction = (int) sample[0];
-			System.out.println("Direction: " + direction);
-			// display.drawString("Direction: " + direction, 0, 3);
-			int distance = (int) sample[1];
-			System.out.println("Distance: " + distance);
+			thread.start();
+			while (Button.ESCAPE.isUp() || (distance > MIN_DISTANCE && distance < MAX_DISTANCE)) {
+				// reads bearing and distance every second
+				seekBeacon.fetchSample(sample, 0);
+				// one pair has 2 elements, in this case: bearing and distance
+				int direction = (int) sample[0];
+				System.out.println("Direction: " + direction);
+				// display.drawString("Direction: " + direction, 0, 3);
+				int distance = (int) sample[1];
+				System.out.println("Distance: " + distance);
 
-//			while () {
+				// while () {
 				// if beacon too far it will drive forward
 				if (direction == 0 && distance >= 100) {
 					// left.setPower(40);
@@ -101,32 +101,34 @@ public class FollowBeaconLauncher {
 				if (distance > ZERO && distance <= MIN_DISTANCE) {
 					// left.stop();
 					// right.stop();
-					Sound.setVolume(ZERO);
+					Sound.setVolume(0);
 					System.out.println("I have found my beacon!");
+					// thread.interrupt();
 					// newGrip.closeGrip(claw);
 					// newGrip.openGrip(claw);
 					break;
 				}
+				
 
 				// after checking direction sample value for the conditions continue to check
 				// conditions for distance sample value
 				// if not found keep on going forward until found
 				// if found stop and initiate claw motor to pick up object
 				// closest distance value is 1
+				
 			}
-		
-		//
-		// if (distance == MIN_DISTANCE) {
-		// left.stop();
-		// right.stop();
-		// Sound.beepSequenceUp();
-		// newGrip.closeGrip(claw);
-		// }
 
-		// free motor and sensor resources
-		left.close();
-		right.close();
-		infrared.close();
+			//
+			// if (distance == MIN_DISTANCE) {
+			// left.stop();
+			// right.stop();
+			// Sound.beepSequenceUp();
+			// newGrip.closeGrip(claw);
+			// }
 
+			// free motor and sensor resources
+			left.close();
+			right.close();
+			infrared.close();
+		}
 	}
-}
