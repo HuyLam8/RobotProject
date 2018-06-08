@@ -28,22 +28,16 @@ public class Mario {
 	private final static int A5 = 880;
 
 	private final static int C6 = 1047;
-	boolean stopMario = true;
+	
 	
 	public Mario() {
 		super();
 	}
 	
-	public static void stopMario() {
-		boolean stop = true;
-		if (stop) {
-			
-		}
-	}
+	
 	
 
 	public static void playMario(boolean stop) {
-
 		while (stop != true) {
 		int vol = Sound.getVolume();
 		System.out.println("I have to find my beacon!");
@@ -128,11 +122,9 @@ public class Mario {
 		*/
 
 		Sound.setVolume(vol);
-		Button.ESCAPE.waitForPressAndRelease();
+		
 		}
 		
-			stop = true;
-			play(0, 0, 0);
 		}
 		
 	

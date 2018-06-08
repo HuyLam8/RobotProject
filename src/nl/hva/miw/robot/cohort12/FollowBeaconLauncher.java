@@ -57,11 +57,12 @@ public class FollowBeaconLauncher {
 
 	int distance;
 	Mario newMario = new Mario();
-//	boolean stop = true;
+	boolean stop = true;
 
 	public void seekBeacon() {
 
 		while (Button.ESCAPE.isUp() || (distance > MIN_DISTANCE && distance < MAX_DISTANCE)) {
+			while (stop);
 			
 			// reads bearing and distance every second
 			seekBeacon.fetchSample(sample, 0);
@@ -100,7 +101,7 @@ public class FollowBeaconLauncher {
 //					right.stop();
 					Sound.beepSequenceUp();
 					System.out.println("I have found my beacon!");
-					Mario.playMario(false);
+					Mario.playMario(true);
 //					newGrip.closeGrip(claw);
 //					newGrip.openGrip(claw);
 					break;
