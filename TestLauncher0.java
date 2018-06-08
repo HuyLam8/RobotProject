@@ -30,7 +30,7 @@ public class TestLauncher0 {
 	ColorSensor color = new ColorSensor(SensorPort.S4);
 
 	public static void main(String[] args) {
-		TestLauncher2 testje = new TestLauncher2();
+		TestLauncher0 testje = new TestLauncher0();
 		testje.run();
 	}
 
@@ -50,14 +50,16 @@ public class TestLauncher0 {
 		motorRight.backward();
 		motorLeft.backward();
 
-		ArrayList<Float> listWithRedVales = new ArrayList<>();
+		//ArrayList<Float> listWithRedVales = new ArrayList<>();
+		int aantalMetingen = 0;
 		float colorValue;
 
 		while (Button.ESCAPE.isUp()) {
 			colorValue = color.getRed();
-			listWithRedVales.add(colorValue);
-			System.out.println("meting " + listWithRedVales.size() + ": meetwaarde: " + colorValue);
-			if (listWithRedVales.size() >= 10) {
+			aantalMetingen++;
+			//listWithRedVales.add(colorValue);
+			System.out.println("meting " + aantalMetingen + ": meetwaarde: " + colorValue + "\n");
+			if (aantalMetingen >= 10) {
 				break;
 			}
 		}
