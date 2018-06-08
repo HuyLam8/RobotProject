@@ -28,11 +28,26 @@ public class Mario {
 	private final static int A5 = 880;
 
 	private final static int C6 = 1047;
+	boolean stopMario = true;
+	
+	public Mario() {
+		super();
+	}
+	
+	public static void stopMario() {
+		boolean stop = true;
+		if (stop) {
+			
+		}
+	}
+	
 
-	public static void main(String[] argh) {
+	public static void playMario(boolean stop) {
+
+		while (stop != true) {
 		int vol = Sound.getVolume();
-		System.out.println("Mario!");
-		Sound.setVolume(66);
+		System.out.println("I have to find my beacon!");
+		Sound.setVolume(20);
 
 		play(E5, 100, 150);
 		play(E5, 100, 300);
@@ -42,7 +57,7 @@ public class Mario {
 		play(G5, 100, 550);
 		play(G4, 100, 575);
 
-		for (int i=0; i<2; i++) {
+		for (int i=0; i<4; i++) {
 			play(C5, 100, 450);
 			play(G4, 100, 400);
 			play(E4, 100, 500);
@@ -112,10 +127,103 @@ public class Mario {
 		}
 		*/
 
-		System.out.println("End.");
 		Sound.setVolume(vol);
 		Button.ESCAPE.waitForPressAndRelease();
-	}
+		}
+		
+			stop = true;
+			play(0, 0, 0);
+		}
+		
+	
+	
+//	public static void main(String[] argh) {
+//		int vol = Sound.getVolume();
+//		System.out.println("Mario!");
+//		Sound.setVolume(66);
+//
+//		play(E5, 100, 150);
+//		play(E5, 100, 300);
+//		play(E5, 100, 300);
+//		play(C5, 100, 100);
+//		play(E5, 100, 300);
+//		play(G5, 100, 550);
+//		play(G4, 100, 575);
+//
+//		for (int i=0; i<2; i++) {
+//			play(C5, 100, 450);
+//			play(G4, 100, 400);
+//			play(E4, 100, 500);
+//			play(A4, 100, 300);
+//			play(B4, 80, 330);
+//			play(As4, 100, 150);
+//			play(A4, 100, 300);
+//			play(G4, 100, 200);
+//			play(E5, 80, 200);
+//			play(G5, 50, 150);
+//			play(A5, 100, 300);
+//			play(F5, 80, 150);
+//			play(G5, 50, 350);
+//			play(E5, 80, 300);
+//			play(C5, 80, 150);
+//			play(D5, 80, 150);
+//			play(B4, 80, 500);
+//		}
+//
+//		/*
+//		play(B4, 100, 300); //F
+//		while (false) {
+//		play(G5, 100, 100);
+//		play(Fs5, 100, 150);
+//		play(E5, 100, 150);
+//		play(Ds5, 150, 300);
+//		play(E5, 150, 300);
+//		play(G4, 100, 150);
+//		play(A4, 100, 150);
+//		play(B4, 100, 300);
+//		play(A4, 100, 150);
+//		play(B4, 100, 100);
+//		play(D5, 100, 225);
+//		play(B4, 100, 300);
+//		play(G5, 100, 100);
+//		play(Fs5, 100, 150);
+//		play(E5, 100, 150);
+//		play(Ds5, 150, 300);
+//		play(E5, 200, 300);
+//		play(C6, 80, 300);
+//		play(C6, 80, 150);
+//		play(C6, 80, 300);
+//		play(G4, 100, 300);
+//		play(B4, 100, 300);
+//		// Chorus 2:
+//		play(G5, 100, 100);
+//		play(Fs5, 100, 150);
+//		play(E5, 100, 150);
+//		play(Ds5, 150, 300);
+//		play(E5, 150, 300);
+//		play(G4, 100, 150);
+//		play(A4, 100, 150);
+//		play(B4, 100, 300);
+//		play(A4, 100, 150);
+//		play(B4, 100, 100);
+//		play(D5, 100, 425);
+//		// End 2
+//		play(D5, 100, 450);
+//		play(Cs5, 100, 425);
+//		play(B4, 100, 350);
+//		play(G4, 100, 300);
+//		play(B4, 100, 300);
+//		play(B4, 100, 150);
+//		play(B4, 100, 300);
+//		play(B4, 100, 300);
+//		// Insert 2
+//		}
+//		*/
+//
+//		System.out.println("End.");
+//		Sound.setVolume(vol);
+//		Button.ESCAPE.waitForPressAndRelease();
+//	}
 
 	private static void play(int freq, int dur, int delay) {
 		if (100 <= freq  && freq  <= 12000 &&
