@@ -33,7 +33,7 @@ public class FollowBeaconLauncher {
 	UnregulatedMotor left = new UnregulatedMotor(MotorPort.C);
 	UnregulatedMotor right = new UnregulatedMotor(MotorPort.D);
 	UnregulatedMotor claw = new UnregulatedMotor(MotorPort.A);
-	UnregulatedMotor head = new UnregulatedMotor(MotorPort.B);
+	RegulatedMotor head = new EV3MediumRegulatedMotor(MotorPort.B);
 	Grip newGrip = new Grip();
 
 	SensorMode seekBeacon = infrared.getSeekMode();
@@ -56,54 +56,56 @@ public class FollowBeaconLauncher {
 	}
 
 	int distance;
-	Mario newMario = new Mario();
-	boolean stop = true;
+//	Mario newMario = new Mario();
+//	boolean stop = true;
 
 	public void seekBeacon() {
 
 		while (Button.ESCAPE.isUp() || (distance > MIN_DISTANCE && distance < MAX_DISTANCE)) {
-			while (stop);
-			
+			//			while (stop);
 			// reads bearing and distance every second
 			seekBeacon.fetchSample(sample, 0);
 			// one pair has 2 elements, in this case: bearing and distance
 			int direction = (int) sample[0];
 			System.out.println("Direction: " + direction);
-			// display.drawString("Direction: " + direction, 0, 3);
 			int distance = (int) sample[1];
 			System.out.println("Distance: " + distance);
-			
+
 			// if beacon too far it will drive forward
 			if (direction == 0 && distance >= 100) {
 				// left.setPower(40);
 				// right.setPower(40);
+				head.setSpeed(20);
+				head.rotate(30);
+				head.rotate(-60);
 			}
 			// move to the right
 			else if (direction > DEVIATION) {
-				// left.setPower(40);
-				// right.setPower(-10);
+//				 left.setPower(40);
+//				 right.setPower(-10);
 				// gear will turn the head the opposite direction
-//				head.setPower(10);
+				head.rotate(-30);
+				
 				// move to the left
 			} else if (direction < DEVIATION) {
-				// left.setPower(-10);
-				// right.setPower(40);
+//				 left.setPower(-10);
+//				 right.setPower(40);
 				// gear will turn the head the opposite direction
-//				head.setPower(-10);
+				head.rotate(30);
 
 				// if beacon is right in front of IR sensor, stop turning head and drive forward
-			} else if (direction <= 0 && direction == DEVIATION) {
+			} else if (direction == DEVIATION && direction <= ZERO) {
 				// left.setPower(40);
 				// right.setPower(40);
-//				head.stop();
+				head.stop();
 				if (distance > ZERO && distance <= MIN_DISTANCE) {
-//					left.stop();
-//					right.stop();
+//					 left.stop();
+//					 right.stop();
 					Sound.beepSequenceUp();
 					System.out.println("I have found my beacon!");
-					Mario.playMario(true);
-//					newGrip.closeGrip(claw);
-//					newGrip.openGrip(claw);
+					// Mario.playMario(true);
+					newGrip.closeGrip(claw);
+					newGrip.openGrip(claw);
 					break;
 				}
 
@@ -114,18 +116,13 @@ public class FollowBeaconLauncher {
 				// closest distance value is 1
 			}
 		}
-		//
-		// if (distance == MIN_DISTANCE) {
-		// left.stop();
-		// right.stop();
-		// Sound.beepSequenceUp();
-		// newGrip.closeGrip(claw);
-		// }
 
 		// free motor and sensor resources
 		left.close();
 		right.close();
 		infrared.close();
+		head.close();
+		claw.close();
 
 	}
 }
