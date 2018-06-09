@@ -48,8 +48,8 @@ public class FollowBeaconLauncher {
 		Button.LEDPattern(4); // flash green led and
 		Sound.beepSequenceUp(); // make sound when ready.
 
-		System.out.println("Press any key to start");
-//		Button.waitForAnyPress();
+		System.out.println("Initiating Follow Beacon!");
+		// Button.waitForAnyPress();
 
 		FollowBeaconLauncher test = new FollowBeaconLauncher();
 		test.seekBeacon();
@@ -75,10 +75,18 @@ public class FollowBeaconLauncher {
 			if (direction == 0 && distance >= 100) {
 				// left.setPower(40);
 				// right.setPower(40);
-				// head.setSpeed(20);
-				// head.rotate(30);
-				// head.rotate(-60);
-				// Delay.msDelay(200);
+				// head.setSpeed(25);
+				// head.rotateTo(-90);
+				// head.rotateTo(180);
+
+				for (int i = 0; direction == 0 && distance >= 100; i++) {
+					head.rotateTo(i + 10);
+					seekBeacon.fetchSample(sample, 0);
+					direction = (int) sample[0];
+					System.out.println("Direction: " + direction);
+					distance = (int) sample[1];
+					System.out.println("Distance: " + distance);
+				}
 
 				// move to the right
 				// else if (direction > DEVIATION) {
@@ -99,14 +107,14 @@ public class FollowBeaconLauncher {
 				// Delay.msDelay(200);
 
 			} else if (direction > DEVIATION) {
-				int speed = (direction - DEVIATION) * 5;
+				int speed = (direction - DEVIATION) * 10;
 				System.out.println("Speed: " + speed);
 				head.setSpeed(speed);
 				head.backward();
 				Delay.msDelay(200);
 
 			} else if (direction < DEVIATION) {
-				int speed = (direction - DEVIATION) * 5;
+				int speed = (direction - DEVIATION) * 10;
 				System.out.println("Speed: " + speed);
 				head.setSpeed(speed);
 				head.forward();
@@ -131,7 +139,7 @@ public class FollowBeaconLauncher {
 					// Mario.playMario(true);
 					newGrip.closeGrip(claw);
 					newGrip.openGrip(claw);
-					// rijden naar beacon vastpakken en naar achteren slepen, 
+					// rijden naar beacon vastpakken en naar achteren slepen,
 					break;
 				}
 			}
