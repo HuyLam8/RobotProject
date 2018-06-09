@@ -26,7 +26,7 @@ public class FollowBeaconLauncher {
 
 	private static final int ZERO = 0;
 	private static final int DEVIATION = -2;
-	private static final int MIN_DISTANCE = 15;
+	private static final int MIN_DISTANCE = 10;
 	private static final int MAX_DISTANCE = 100;
 
 	EV3IRSensor infrared = new EV3IRSensor(SensorPort.S1);
@@ -49,20 +49,20 @@ public class FollowBeaconLauncher {
 		Sound.beepSequenceUp(); // make sound when ready.
 
 		System.out.println("Press any key to start");
-		Button.waitForAnyPress();
+//		Button.waitForAnyPress();
 
 		FollowBeaconLauncher test = new FollowBeaconLauncher();
 		test.seekBeacon();
 	}
 
 	int distance;
-//	Mario newMario = new Mario();
-//	boolean stop = true;
+	// Mario newMario = new Mario();
+	// boolean stop = true;
 
 	public void seekBeacon() {
 
 		while (Button.ESCAPE.isUp() || (distance > MIN_DISTANCE && distance < MAX_DISTANCE)) {
-			//			while (stop);
+			// while (stop);
 			// reads bearing and distance every second
 			seekBeacon.fetchSample(sample, 0);
 			// one pair has 2 elements, in this case: bearing and distance
@@ -75,45 +75,65 @@ public class FollowBeaconLauncher {
 			if (direction == 0 && distance >= 100) {
 				// left.setPower(40);
 				// right.setPower(40);
-				head.setSpeed(20);
-				head.rotate(30);
-				head.rotate(-60);
-			}
-			// move to the right
-			else if (direction > DEVIATION) {
-//				 left.setPower(40);
-//				 right.setPower(-10);
-				// gear will turn the head the opposite direction
-				head.rotate(-30);
-				
-				// move to the left
-			} else if (direction < DEVIATION) {
-//				 left.setPower(-10);
-//				 right.setPower(40);
-				// gear will turn the head the opposite direction
-				head.rotate(30);
+				// head.setSpeed(20);
+				// head.rotate(30);
+				// head.rotate(-60);
+				// Delay.msDelay(200);
 
-				// if beacon is right in front of IR sensor, stop turning head and drive forward
-			} else if (direction == DEVIATION && direction <= ZERO) {
+				// move to the right
+				// else if (direction > DEVIATION) {
 				// left.setPower(40);
+				// right.setPower(-10);
+				// gear will turn the head the opposite direction
+				// head.setSpeed(25);
+				// head.backward();
+				// Delay.msDelay(200);
+
+				// move to the left
+				// } else if (direction < DEVIATION) {
+				// left.setPower(-10);
 				// right.setPower(40);
-				head.stop();
-				if (distance > ZERO && distance <= MIN_DISTANCE) {
-//					 left.stop();
-//					 right.stop();
-					Sound.beepSequenceUp();
-					System.out.println("I have found my beacon!");
-					// Mario.playMario(true);
-					newGrip.closeGrip(claw);
-					newGrip.openGrip(claw);
-					break;
-				}
+				// gear will turn the head the opposite direction
+				// head.setSpeed(25);
+				// head.forward();
+				// Delay.msDelay(200);
+
+			} else if (direction > DEVIATION) {
+				int speed = (direction - DEVIATION) * 5;
+				System.out.println("Speed: " + speed);
+				head.setSpeed(speed);
+				head.backward();
+				Delay.msDelay(200);
+
+			} else if (direction < DEVIATION) {
+				int speed = (direction - DEVIATION) * 5;
+				System.out.println("Speed: " + speed);
+				head.setSpeed(speed);
+				head.forward();
+				Delay.msDelay(200);
 
 				// after checking direction sample value for the conditions continue to check
 				// conditions for distance sample value
 				// if not found keep on going forward until found
 				// if found stop and initiate claw motor to pick up object
 				// closest distance value is 1
+				// if beacon is right in front of IR sensor, stop turning head and drive forward
+			} else if (direction >= -6 && direction <= 0) {
+				// left.setPower(40);
+				// right.setPower(40);
+				head.stop();
+				Delay.msDelay(200);
+				if (distance > ZERO && distance <= MIN_DISTANCE) {
+					// left.stop();
+					// right.stop();
+					Sound.beepSequenceUp();
+					System.out.println("I have found my beacon!");
+					// Mario.playMario(true);
+					newGrip.closeGrip(claw);
+					newGrip.openGrip(claw);
+					// rijden naar beacon vastpakken en naar achteren slepen, 
+					break;
+				}
 			}
 		}
 
