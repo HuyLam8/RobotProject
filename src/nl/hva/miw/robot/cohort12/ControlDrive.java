@@ -134,6 +134,11 @@ public class ControlDrive {
 		ControlDrive.motorRight.setPower(FAST_FORWARD);
 		ControlDrive.motorLeft.setPower(FAST_FORWARD);
 	}
+	
+	public void setPower(int rightPower, int leftPower) {
+		ControlDrive.motorRight.setPower(rightPower);
+		ControlDrive.motorLeft.setPower(leftPower);
+	}
 
 	public void stop() {
 		ControlDrive.motorRight.stop();
