@@ -96,6 +96,27 @@ public class LineFollower {
 			}
 		}
 	}
+	
+	public void pControllerWithPanicModeOnRightBorder() {
+		while (Button.ESCAPE.isUp()) {
+			int rightPower;
+			int leftPower;
+			float colorValue = colorSensor.getRed();
+			double tooWhite = colorValue - redColorOfBorder;
+			// make the 'correction' proportional on the tooWhite-error
+			if (tooWhite > -0.25) {
+				rightPower = Math.max(-100, Math.min(100, (int) (steadyPowerPercentage + kP * tooWhite)));
+				leftPower = Math.max(-100, Math.min(100, (int) (steadyPowerPercentage - kP * tooWhite)));
+				drive.setPower(rightPower, leftPower);
+			}
+			// if high risk of 'losing' the innercurve, then let the robot turn around its own axis ('panic mode')
+			else {
+				rightPower = -100;
+				leftPower = 100;
+				drive.setPower(rightPower, leftPower);
+			}
+		}
+	}
 
 	/**
 	 * In the somewhat more advanced version, there are two improvements: - the
