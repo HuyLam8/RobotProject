@@ -4,6 +4,13 @@ import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3ColorSensor;
 import lejos.robotics.Color;
 
+/**
+ * This class automatically sets the ColorSensor in red-light mode and turns the
+ * red floodlight on as well when calling the constructor.
+ * 
+ * @author Bjorn Goos 
+ *
+ */
 public class ColorSensor extends EV3ColorSensor {
 	float[] measuredValues;
 
