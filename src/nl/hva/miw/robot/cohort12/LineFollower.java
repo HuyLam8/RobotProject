@@ -274,8 +274,12 @@ public class LineFollower {
 
 	public void calibrate() {
 		System.out.println("Set the sensor on black");
+		Sound.beepSequenceUp();
+		Button.waitForAnyPress();
 		LineFollower.redColorOfBlack = colorSensor.getRed();
 		System.out.println("Set the sensor on white");
+		Sound.beepSequenceUp();
+		Button.waitForAnyPress();
 		LineFollower.redColorOfWhite = colorSensor.getRed();
 	}
 }
