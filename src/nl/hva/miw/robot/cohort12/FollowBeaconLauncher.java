@@ -1,7 +1,7 @@
 package nl.hva.miw.robot.cohort12;
 
 import lejos.hardware.Button;
-import lejos.hardware.Sound;
+import lejos.hardware.motor.BaseRegulatedMotor;
 import lejos.hardware.motor.EV3MediumRegulatedMotor;
 import lejos.hardware.motor.UnregulatedMotor;
 import lejos.hardware.port.MotorPort;
@@ -35,6 +35,8 @@ public class FollowBeaconLauncher {
 	UnregulatedMotor claw = new UnregulatedMotor(MotorPort.A);
 	RegulatedMotor head = new EV3MediumRegulatedMotor(MotorPort.B);
 	Grip newGrip = new Grip();
+	int distance;
+	int tachoCount;
 
 	SensorMode seekBeacon = infrared.getSeekMode();
 	float[] sample = new float[seekBeacon.sampleSize()];
@@ -46,7 +48,7 @@ public class FollowBeaconLauncher {
 		System.out.println("Infrared Sensor\n");
 
 		Button.LEDPattern(4); // flash green led and
-		Sound.beepSequenceUp(); // make sound when ready.
+		// Sound.beepSequenceUp(); // make sound when ready.
 
 		System.out.println("Initiating Follow Beacon!");
 		// Button.waitForAnyPress();
@@ -55,14 +57,11 @@ public class FollowBeaconLauncher {
 		test.seekBeacon();
 	}
 
-	int distance;
-	// Mario newMario = new Mario();
-	// boolean stop = true;
-
 	public void seekBeacon() {
-
+		
+		head.resetTachoCount();
+		
 		while (Button.ESCAPE.isUp() || (distance > MIN_DISTANCE && distance < MAX_DISTANCE)) {
-			// while (stop);
 			// reads bearing and distance every second
 			seekBeacon.fetchSample(sample, 0);
 			// one pair has 2 elements, in this case: bearing and distance
@@ -70,54 +69,45 @@ public class FollowBeaconLauncher {
 			System.out.println("Direction: " + direction);
 			int distance = (int) sample[1];
 			System.out.println("Distance: " + distance);
+			tachoCount = head.getTachoCount();
+			System.out.println("Tachocount: " + tachoCount);
 
 			// if beacon too far it will drive forward
 			if (direction == 0 && distance >= 100) {
 				// left.setPower(40);
 				// right.setPower(40);
-				// head.setSpeed(25);
-				// head.rotateTo(-90);
-				// head.rotateTo(180);
+				head.rotateTo(-45, true);
+				head.rotateTo(90, true);
 
-				for (int i = 0; direction == 0 && distance >= 100; i++) {
-					head.rotateTo(i + 10);
-					seekBeacon.fetchSample(sample, 0);
-					direction = (int) sample[0];
-					System.out.println("Direction: " + direction);
-					distance = (int) sample[1];
-					System.out.println("Distance: " + distance);
-				}
+				// for (int i = 0; direction == 0 && distance >= 100; i++) {
+				// head.rotateTo(i + 10);
+				// seekBeacon.fetchSample(sample, 0);
+				// direction = (int) sample[0];
+				// System.out.println("Direction: " + direction);
+				// distance = (int) sample[1];
+				// System.out.println("Distance: " + distance);
+				// }
 
-				// move to the right
-				// else if (direction > DEVIATION) {
-				// left.setPower(40);
-				// right.setPower(-10);
-				// gear will turn the head the opposite direction
-				// head.setSpeed(25);
-				// head.backward();
-				// Delay.msDelay(200);
-
-				// move to the left
-				// } else if (direction < DEVIATION) {
-				// left.setPower(-10);
-				// right.setPower(40);
-				// gear will turn the head the opposite direction
-				// head.setSpeed(25);
-				// head.forward();
-				// Delay.msDelay(200);
-
-			} else if (direction > DEVIATION) {
+				// gear will turn backward and head will turn to the right
+			} else if (direction > DEVIATION && tachoCount > -90) {
 				int speed = (direction - DEVIATION) * 10;
 				System.out.println("Speed: " + speed);
 				head.setSpeed(speed);
 				head.backward();
+				// move to the right
+				// left.setPower(40);
+				// right.setPower(-10);
 				Delay.msDelay(200);
 
-			} else if (direction < DEVIATION) {
+				// gear will turn forward and head will turn to the left
+			} else if (direction < DEVIATION && tachoCount < 90) {
 				int speed = (direction - DEVIATION) * 10;
 				System.out.println("Speed: " + speed);
 				head.setSpeed(speed);
 				head.forward();
+				// move to the left
+				// left.setPower(-10);
+				// right.setPower(40);
 				Delay.msDelay(200);
 
 				// after checking direction sample value for the conditions continue to check
@@ -126,20 +116,19 @@ public class FollowBeaconLauncher {
 				// if found stop and initiate claw motor to pick up object
 				// closest distance value is 1
 				// if beacon is right in front of IR sensor, stop turning head and drive forward
-			} else if (direction >= -6 && direction <= 0) {
+			} else if ((direction >= -6 && direction <= 0) || tachoCount > 90 || tachoCount < -90) {	
 				// left.setPower(40);
 				// right.setPower(40);
 				head.stop();
-				Delay.msDelay(200);
+				Delay.msDelay(500);
 				if (distance > ZERO && distance <= MIN_DISTANCE) {
 					// left.stop();
 					// right.stop();
-					Sound.beepSequenceUp();
+					// Sound.beepSequenceUp();
 					System.out.println("I have found my beacon!");
-					// Mario.playMario(true);
 					newGrip.closeGrip(claw);
 					newGrip.openGrip(claw);
-					// rijden naar beacon vastpakken en naar achteren slepen,
+					// Voor opdracht 3 - rijden naar beacon vastpakken en naar achteren slepen,
 					break;
 				}
 			}
@@ -151,6 +140,5 @@ public class FollowBeaconLauncher {
 		infrared.close();
 		head.close();
 		claw.close();
-
 	}
 }
