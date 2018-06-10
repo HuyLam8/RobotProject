@@ -11,28 +11,6 @@ import lejos.hardware.motor.UnregulatedMotor;
  */
 
 public class ControlDrive {
-
-	private final static int VERY_SMALL_TURN_X = 50;
-	private final static int VERY_SMALL_TURN_Y = 40;
-
-	private final static int SMALL_TURN_X = 60;
-	private final static int SMALL_TURN_Y = 10;
-
-	private final static int NORMAL_TURN_X = 60;
-	private final static int NORMAL_TURN_Y = -15;
-
-	private final static int STRONG_TURN_X = 75;
-	private final static int STRONG_TURN_Y = -75;
-
-	private final static int EXTREME_TURN_X = 100;
-	private final static int EXTREME_TURN_Y = -100;
-
-	private final static int EXTRA_SMALL_TURN_TO_TEST_POSITION_X = 40;
-	private final static int EXTRA_SMALL_TURN_TO_TEST_POSITION_Y = 10;
-
-	private final static int NORMAL_FORWARD = 40;
-	private final static int FAST_FORWARD = 60;
-
 	private static UnregulatedMotor motorRight;
 	private static UnregulatedMotor motorLeft;
 
@@ -70,71 +48,17 @@ public class ControlDrive {
 		ControlDrive.motorLeft = motorLeft;
 	}
 
-	public void verySmallTurnLeft() {
-		ControlDrive.motorRight.setPower(VERY_SMALL_TURN_X);
-		ControlDrive.motorLeft.setPower(VERY_SMALL_TURN_Y);
-	}
+	/**
+	 * Set the power at which the robot moves. Choose a higher power for the right
+	 * motor compared to the left motor to make the robot move to the left (vice
+	 * versa).
+	 * 
+	 * @param rightPower
+	 *            Power of the motor on the right of the robot
+	 * @param leftPower
+	 *            Power of the motor on the right of the robot
+	 */
 
-	public void verySmallTurnRight() {
-		ControlDrive.motorLeft.setPower(VERY_SMALL_TURN_X);
-		ControlDrive.motorRight.setPower(VERY_SMALL_TURN_Y);
-	}
-
-	public void smallTurnLeft() {
-		ControlDrive.motorRight.setPower(SMALL_TURN_X);
-		ControlDrive.motorLeft.setPower(SMALL_TURN_Y);
-	}
-
-	public void smallTurnRight() {
-		ControlDrive.motorLeft.setPower(SMALL_TURN_X);
-		ControlDrive.motorRight.setPower(SMALL_TURN_Y);
-	}
-
-	public void normalTurnLeft() {
-		ControlDrive.motorRight.setPower(NORMAL_TURN_X);
-		ControlDrive.motorLeft.setPower(NORMAL_TURN_Y);
-	}
-
-	public void normalTurnRight() {
-		ControlDrive.motorLeft.setPower(NORMAL_TURN_X);
-		ControlDrive.motorRight.setPower(NORMAL_TURN_Y);
-	}
-
-	public void strongTurnRight() {
-		ControlDrive.motorLeft.setPower(STRONG_TURN_X);
-		ControlDrive.motorRight.setPower(STRONG_TURN_Y);
-	}
-
-	public void strongTurnLeft() {
-		ControlDrive.motorRight.setPower(STRONG_TURN_X);
-		ControlDrive.motorLeft.setPower(STRONG_TURN_Y);
-	}
-
-	public void extremeTurnRight() {
-		ControlDrive.motorLeft.setPower(EXTREME_TURN_X);
-		ControlDrive.motorRight.setPower(EXTREME_TURN_Y);
-	}
-
-	public void extremeTurnLeft() {
-		ControlDrive.motorRight.setPower(EXTREME_TURN_X);
-		ControlDrive.motorLeft.setPower(EXTREME_TURN_Y);
-	}
-
-	public void extraSmallTurnToLeftToTestPosition() {
-		ControlDrive.motorRight.setPower(EXTRA_SMALL_TURN_TO_TEST_POSITION_X);
-		ControlDrive.motorLeft.setPower(EXTRA_SMALL_TURN_TO_TEST_POSITION_Y);
-	}
-
-	public void moveStraightAtNormalSpeed() {
-		ControlDrive.motorRight.setPower(NORMAL_FORWARD);
-		ControlDrive.motorLeft.setPower(NORMAL_FORWARD);
-	}
-
-	public void moveStraightAtHighSpeed() {
-		ControlDrive.motorRight.setPower(FAST_FORWARD);
-		ControlDrive.motorLeft.setPower(FAST_FORWARD);
-	}
-	
 	public void setPower(int rightPower, int leftPower) {
 		ControlDrive.motorRight.setPower(rightPower);
 		ControlDrive.motorLeft.setPower(leftPower);
@@ -154,5 +78,4 @@ public class ControlDrive {
 		ControlDrive.motorRight.backward();
 		ControlDrive.motorLeft.backward();
 	}
-
 }
