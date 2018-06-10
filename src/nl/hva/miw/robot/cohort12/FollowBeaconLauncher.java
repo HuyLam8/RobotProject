@@ -79,6 +79,7 @@ public class FollowBeaconLauncher {
 			if (direction == 0 && distance >= 100) {
 				left.setPower(40);
 				right.setPower(40);
+				Delay.msDelay(200);
 //				head.rotateTo(-45);
 //				head.rotateTo(90);
 				// headBeaconScanner.start();
@@ -97,12 +98,12 @@ public class FollowBeaconLauncher {
 				// headBeaconScanner.interrupt();
 
 				int speed = (direction - DEVIATION) * 10;
-				left.setPower(80);
-				right.setPower(-10);
 				System.out.println("Speed: " + speed);
 				head.setSpeed(speed);
 				head.backward();
 				// move to the right
+				left.setPower(80);
+				right.setPower(-10);
 				Delay.msDelay(200);
 
 				// gear will turn forward and head will turn to the left
@@ -110,12 +111,12 @@ public class FollowBeaconLauncher {
 				// headBeaconScanner.interrupt();
 
 				int speed = (direction - DEVIATION) * 10;
-				left.setPower(-10);
-				right.setPower(80);
 				System.out.println("Speed: " + speed);
 				head.setSpeed(speed);
 				head.forward();
 				// move to the left
+				left.setPower(-10);
+				right.setPower(80);
 				Delay.msDelay(200);
 
 				// after checking direction sample value for the conditions continue to check
@@ -125,11 +126,17 @@ public class FollowBeaconLauncher {
 				// closest distance value is 1
 				// if beacon is right in front of IR sensor, stop turning head and drive forward
 			} else if ((direction >= -6 && direction <= 0) || tachoCount > 90 || tachoCount < -90) {
-				left.setPower(40);
-				right.setPower(40);
 				// headBeaconScanner.interrupt();
 				head.stop();
-				Delay.msDelay(500);
+				if (direction > DEVIATION) {
+					left.setPower(80);
+					right.setPower(-10);
+					Delay.msDelay(200);
+				} else if (direction > DEVIATION){
+					left.setPower(-10);
+					right.setPower(80);
+					Delay.msDelay(200);
+				}
 				if (distance > ZERO && distance <= MIN_DISTANCE) {
 					left.stop();
 					right.stop();
