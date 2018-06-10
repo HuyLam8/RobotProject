@@ -25,9 +25,11 @@ public class LineFollower {
 	// encompasses a 'calibrate'-method to adjust these figures.
 	private static double redColorOfBlack = 0.85;
 	private static double redColorOfWhite = 0.08;
+	// With redColorOfBlack at 0.85 and redColorOfWhite at 0.08, the
+	// redColorOfBorder equals 0.465
 	private static double redColorOfBorder = (redColorOfBlack - redColorOfWhite) / 2 + redColorOfWhite;
 
-	// The power of the robot's motors in case of an on/fff-line follower
+	// The power of the robot's motors in case of an on/off-line follower
 	// If robot is placed at the right border, then OuterMoter = right motor,
 	// InnerMotor = left motor
 	// If robot is placed at the left border, then OuterMoter = left motor,
@@ -39,7 +41,7 @@ public class LineFollower {
 	// A higher kP implies that the robot will move faster to the border. This will
 	// generally lower the duration of zigzagging, but also temporarily increase the
 	// extent of the zigzagging
-	private static int kP = 250;
+	private static int kP = 140;
 	// The robot moves faster at a higher power, but the risk of losing curves also
 	// increases
 	private static int steadyPower = 30;
@@ -51,17 +53,13 @@ public class LineFollower {
 	// If the robot does not accelerate soon enough when it is driving almost
 	// straight, then consider increasing the speedUpBoundary
 	private static double speedUpBoundary = 0.05;
-	private static int speedPower = 50;
-	// If the robot has to follow a dashed line as well, then set the variables
-	// below in such a way, that it will
-	private static double dashedLineColorValue = 0.75;
+	private static int speedPower = 40;
+	// If the robot has to follow a dashed line as well, then use these variables
+	static boolean dealWithDashedLines = false;
+	private static double dashedLineHelperBoundary = 0.25;
+	private static double dashedLineBoundary = 0.35;
 	private static int dashedLinePowerOuterMotor = 10;
 	private static int dashedLinePowerInnerMotor = 30;
-	private static int steadyPowerCorrectionForDashedLine = 0;
-	private static int speedPowerCorrectionForDashedLine = 0;
-	private static int kPCorrectionForDashedLine = 0;
-	private static int speedUpBoundaryCorrectionForDashedLine = 0;
-	private static double adjustmentToPreventMissingOutsideCurve = 0;
 
 	// The required variables for the line follower that determines at which border
 	// of the line the robot is starting
@@ -114,7 +112,7 @@ public class LineFollower {
 	 * going to the left when he reads a color that is more black than the surface.
 	 */
 
-	public void OnOffRight() {
+	private void OnOffRight() {
 		while (Button.ESCAPE.isUp()) {
 			drive.goForward();
 			float colorValue = colorSensor.getRed();
@@ -128,7 +126,7 @@ public class LineFollower {
 		}
 	}
 
-	public void OnOffLeft() {
+	private void OnOffLeft() {
 		while (Button.ESCAPE.isUp()) {
 			float colorValue = colorSensor.getRed();
 			double tooWhite = colorValue - redColorOfBorder;
@@ -147,7 +145,7 @@ public class LineFollower {
 	 * This correction is needed since missing an inner curve means ending up on the
 	 * wrong side of the line; 2. If the robot is moving over a 'straight line',
 	 * i.e. the error is very small, then the 'speed' (i.e. the power of the
-	 * unregulated motor) increases; by this, the robot will move extra fast on
+	 * unregulated motors) increases; by this, the robot will move extra fast on
 	 * straight lines.
 	 * 
 	 * This picture shows the idea behind the first 2 adjustments:
@@ -160,11 +158,11 @@ public class LineFollower {
 	 * misses the outer curve of a bend.
 	 * 
 	 * This adjusted P-controller can easily be turned into a standard P-controller
-	 * by: 1. setting the steadyPower equal to the speedPower 2.setting the
-	 * panicBoundary at e.g. -1 and 3. setting all the variables related to
-	 * following the dashed line to 0.
+	 * by e.g.: 1. setting the steadyPower equal to the speedPower 2. setting the
+	 * panicBoundary at e.g. -1 and 3. setting the dashedLineColorValue at e.g. -1
+	 * and all other variables related to following the dashed line at 0.
 	 */
-	public void adjustablePControllerRight() {
+	private void adjustablePControllerRight() {
 		while (Button.ESCAPE.isUp()) {
 			int rightPower;
 			int leftPower;
@@ -173,8 +171,8 @@ public class LineFollower {
 			// If there is a risk of losing the 'inner curve' of a bend, then a 'panic mode'
 			// applies
 			if (tooWhite < panicBoundary) {
-				rightPower = panicPower;
-				leftPower = -panicPower;
+				rightPower = -panicPower;
+				leftPower = panicPower;
 				drive.setPower(rightPower, leftPower);
 			}
 			// If the robot is driving over a more or less straight line, then the speed
@@ -188,18 +186,29 @@ public class LineFollower {
 			// If the robot has to follow a dashed line as well, then it has to first detect
 			// that there is a dashed line. In our method, the robot will see (i.e. assume
 			// there is) a dashed line if the color value is above a certain threshold (i.e.
-			// the dashedLineColorValue). In this case, the robot's outer motor will
-			// actually have a somewhat lower power than it's inner motor. This way, the
+			// the dashedLineBoundary). In this case, the robot's outer motor should
+			// have a somewhat lower power than it's inner motor. This way, the
 			// robot will, hopefully, continue to the next black part of the dashed line.
 			// Ideally, the robot will move something like this: https://imgur.com/a/VC9pdkQ
-			// With this method, there is ofcourse the risk that the robot will, ultimately,
-			// end up either on the wrong side of the line or will miss the line completely.
+			// With this method, there is of course the risk that the robot will,
+			// ultimately, end up either on the wrong side of the line or miss the line
+			// completely.
 
-			// else if (tooWhite > dashedLineColorValue) {
-			// rightPower = dashedLinePowerOuterMotor;
-			// leftPower = dashedLinePowerInnerMotor;
-			// drive.setPower(rightPower, leftPower);
-			// }
+			if (dealWithDashedLines == true) {
+				// Make sure that the robot never reaches a 'very white' surface when e.g.
+				// missing the outer curve of a bend
+				if (tooWhite > dashedLineHelperBoundary) {
+					rightPower = panicPower;
+					leftPower = -panicPower;
+					drive.setPower(rightPower, leftPower);
+				} 
+				// 
+				else if (tooWhite > dashedLineBoundary) {
+					rightPower = dashedLinePowerOuterMotor;
+					leftPower = dashedLinePowerInnerMotor;
+					drive.setPower(rightPower, leftPower);
+				}
+			}
 
 			// This is the basic P-controller
 			else {
@@ -210,7 +219,7 @@ public class LineFollower {
 		}
 	}
 
-	public void adjustablePControllerLeft() {
+	private void adjustablePControllerLeft() {
 	}
 
 	/*-
@@ -233,7 +242,7 @@ public class LineFollower {
 	 *	
 	 */
 
-	public void startFromUnknowBorder() {
+	private void startFromUnknowBorder() {
 		int aantalMetingen = 0;
 		float meting1 = -1;
 		float meting13 = -1;
