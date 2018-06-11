@@ -10,6 +10,16 @@ import lejos.hardware.sensor.*;
 import lejos.robotics.RegulatedMotor;
 import lejos.utility.Delay;
 
+/**
+ * With (an instance of) this class, a robot can move forward while avoiding all
+ * objects on its way. It's possible to set the amount of objects to be passed.
+ * The robot will pass the first object at the left, the second at the right,
+ * the third at the left, the fourth at the right, etc.
+ * 
+ * @author Bjorn Goos
+ *
+ */
+
 public class ObjectAvoider {
 	private static RegulatedMotor motorRight;
 	private static RegulatedMotor motorLeft;
@@ -23,6 +33,24 @@ public class ObjectAvoider {
 	private static final int GO_CALMLY_FORWARD = 360;
 	private static final int numberOfObjectsToBePassed = 2;
 
+	/**
+	 * Instantiate an object avoider
+	 * 
+	 * @param motorRight
+	 *            The motor at the right of the robot
+	 * @param motorLeft
+	 *            The motor at the left of the robot
+	 * @param motorOfHead
+	 *            The motor that turns the 'head' of the robot, i.e. the place of
+	 *            the robot where the IR-sensor is attached to
+	 * @param motorOfGrip
+	 *            The motor that makes the grip open and close
+	 * @param colorSensor
+	 *            The sensor that measures color values
+	 * @param infraRedSensor
+	 *            The sensor that measures distances (and 'angels' for the Beacon)
+	 */
+
 	public ObjectAvoider(RegulatedMotor motorRight, RegulatedMotor motorLeft, RegulatedMotor motorOfHead,
 			UnregulatedMotor motorOfGrip, ColorSensor colorSensor, EV3IRSensor infraRedSensor) {
 		super();
@@ -34,7 +62,13 @@ public class ObjectAvoider {
 		this.infraRedSensor = infraRedSensor;
 	}
 
-	private void run() {
+	/**
+	 * Method to start the object avoider. Place the robot in an 90 degree angle
+	 * with respect to the first object for the best results. Also, make sure the
+	 * 'head' of the robot is 'straight' (i.e. lined with the robot's moving
+	 * direction).
+	 */
+	public void startObjectAvoider() {
 		Sound.beepSequence();
 		System.out.println("Press a key to start the Object Avoider");
 		Button.waitForAnyPress();
