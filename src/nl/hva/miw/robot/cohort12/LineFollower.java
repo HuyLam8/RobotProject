@@ -38,27 +38,35 @@ public class LineFollower {
 	private static int onOffPowerInnerMotor = -15;
 
 	// The required variables for setting and adjusting the P-controller
-	// A higher kP implies that the robot will move faster to the border. This will
-	// generally lower the duration of zigzagging, but also temporarily increase the
-	// extent of the zigzagging
-	private static int kP = 140;
+	// A higher kP implies that the robot will move faster to the border of the
+	// line. This will generally lower the duration of zigzagging, but also
+	// temporarily increase the extent of the zigzagging
+	private static int kP = 150;
 	// The robot moves faster at a higher power, but the risk of losing curves also
 	// increases
-	private static int steadyPower = 30;
+	private static int steadyPower = 37;
 	// If the robot keeps missing inner curves, then consider to increase (i.e. move
 	// closer to zero) the panic boundary. Another option is to lower the above
-	// mentioned steady and/or speed power
+	// mentioned steady power
+	static boolean panicMode = true;
 	private static double panicBoundary = -0.25;
+	private static int panicKpInner = 1000;
+	private static int panicSteadyPowerInner = 250;
+	private static int panicKpOuter = -1000;
+	private static int panicSteadyPowerOuter = -175;
 	private static int panicPower = 100;
 	// If the robot does not accelerate soon enough when it is driving almost
 	// straight, then consider increasing the speedUpBoundary
+	static boolean useSpeeder = false;
 	private static double speedUpBoundary = 0.05;
-	private static int speedPower = 40;
+	private static int speedPower = 50;
+	private static int speedKp1 = 400;
+	private static int speedKp2 = 100;
 	// If the robot has to follow a dashed line as well, then use these variables
 	static boolean dealWithDashedLines = false;
 	private static double dashedLineHelperBoundary = 0.25;
 	private static double dashedLineBoundary = 0.35;
-	private static int dashedLinePowerOuterMotor = 10;
+	private static int dashedLinePowerOuterMotor = 20;
 	private static int dashedLinePowerInnerMotor = 30;
 
 	// The required variables for the line follower that determines at which border
@@ -107,14 +115,14 @@ public class LineFollower {
 
 	/**
 	 * In the most simple version of the line follower, the robot always moves
-	 * towards the line by, if it starts on the right border, going to the left when
-	 * he reads a surface color that is more white than the border respectively
-	 * going to the left when he reads a color that is more black than the surface.
+	 * towards the border of the line by, if it starts on the right border, going to
+	 * the left when it reads a surface color that is more white than the border
+	 * respectively going to the right when it reads a color that is more black than
+	 * the border.
 	 */
 
 	private void OnOffRight() {
 		while (Button.ESCAPE.isUp()) {
-			drive.goForward();
 			float colorValue = colorSensor.getRed();
 			double tooWhite = colorValue - redColorOfBorder;
 			System.out.println("color: " + colorValue);
@@ -158,9 +166,7 @@ public class LineFollower {
 	 * misses the outer curve of a bend.
 	 * 
 	 * This adjusted P-controller can easily be turned into a standard P-controller
-	 * by e.g.: 1. setting the steadyPower equal to the speedPower 2. setting the
-	 * panicBoundary at e.g. -1 and 3. setting the dashedLineColorValue at e.g. -1
-	 * and all other variables related to following the dashed line at 0.
+	 * by setting all the booleans (useSpeeder, dealWithDashedLines) at false.
 	 */
 	private void adjustablePControllerRight() {
 		while (Button.ESCAPE.isUp()) {
@@ -170,19 +176,35 @@ public class LineFollower {
 			double tooWhite = colorValue - redColorOfBorder;
 			// If there is a risk of losing the 'inner curve' of a bend, then a 'panic mode'
 			// applies
-			if (tooWhite < panicBoundary) {
-				rightPower = -panicPower;
-				leftPower = panicPower;
-				drive.setPower(rightPower, leftPower);
+			if (panicMode == true) {
+				if (tooWhite < panicBoundary) {
+					// rightPower = Math.max(-100, Math.min(100, (int) (panicSteadyPowerOuter +
+					// panicKpOuter *
+					// tooWhite)));
+					// leftPower = Math.max(-100, Math.min(100, (int) (panicSteadyPowerInner -
+					// panicKpInner *
+					// tooWhite)));
+					rightPower = -panicPower;
+					leftPower = panicPower;
+					drive.setPower(rightPower, leftPower);
+				}
 			}
 			// If the robot is driving over a more or less straight line, then the speed
 			// goes up
-			else if (tooWhite < speedUpBoundary && tooWhite > -speedUpBoundary) {
-				rightPower = Math.max(-100, Math.min(100, (int) (speedPower + kP * tooWhite)));
-				leftPower = Math.max(-100, Math.min(100, (int) (speedPower - kP * tooWhite)));
-				drive.setPower(rightPower, leftPower);
+			if (useSpeeder == true) {
+				if (tooWhite < speedUpBoundary && tooWhite > -speedUpBoundary) {
+					if (tooWhite > -speedUpBoundary) {
+						rightPower = Math.max(-100, (Math.min(100, (int) (speedPower + speedKp1 * tooWhite))));
+						leftPower = Math.max(-100, Math.min(100, (int) (speedPower - speedKp1 * tooWhite)));
+						drive.setPower(rightPower, leftPower);
+					}
+					if (tooWhite < speedUpBoundary) {
+						rightPower = Math.max(-100, (Math.min(100, (int) (speedPower + speedKp2 * tooWhite))));
+						leftPower = Math.max(-100, Math.min(100, (int) (speedPower - speedKp2 * tooWhite)));
+						drive.setPower(rightPower, leftPower);
+					}
+				}
 			}
-
 			// If the robot has to follow a dashed line as well, then it has to first detect
 			// that there is a dashed line. In our method, the robot will see (i.e. assume
 			// there is) a dashed line if the color value is above a certain threshold (i.e.
@@ -201,8 +223,8 @@ public class LineFollower {
 					rightPower = panicPower;
 					leftPower = -panicPower;
 					drive.setPower(rightPower, leftPower);
-				} 
-				// 
+				}
+				//
 				else if (tooWhite > dashedLineBoundary) {
 					rightPower = dashedLinePowerOuterMotor;
 					leftPower = dashedLinePowerInnerMotor;
@@ -282,13 +304,15 @@ public class LineFollower {
 	}
 
 	public void calibrate() {
-		System.out.println("Set the sensor on black");
+		System.out.println("Put the sensor on black");
 		Sound.beepSequenceUp();
 		Button.waitForAnyPress();
 		LineFollower.redColorOfBlack = colorSensor.getRed();
-		System.out.println("Set the sensor on white");
+		System.out.println("Black: " + redColorOfBlack);
+		System.out.println("Put the sensor on white");
 		Sound.beepSequenceUp();
 		Button.waitForAnyPress();
 		LineFollower.redColorOfWhite = colorSensor.getRed();
+		System.out.println("White: " + redColorOfWhite);
 	}
 }
