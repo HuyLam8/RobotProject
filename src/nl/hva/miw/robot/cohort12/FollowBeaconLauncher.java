@@ -98,9 +98,9 @@ public class FollowBeaconLauncher {
 //				head.backward();
 //				Delay.msDelay(500);
 				// move to the right
-				left.setPower(40);
+				left.setPower(speed);
 				right.setPower(-10);
-				Delay.msDelay(500);
+				Delay.msDelay(200);
 
 				// gear will turn forward and head will turn to the left
 			} else if (direction < DEVIATION) {
@@ -113,8 +113,8 @@ public class FollowBeaconLauncher {
 //				Delay.msDelay(500);
 				// move to the left
 				left.setPower(-10);
-				right.setPower(40);
-				Delay.msDelay(1000);
+				right.setPower(speed);
+				Delay.msDelay(200);
 
 				// after checking direction sample value for the conditions continue to check
 				// conditions for distance sample value
@@ -125,7 +125,7 @@ public class FollowBeaconLauncher {
 			} else if (direction >= -6 && direction <= 0) {
 				// headBeaconScanner.interrupt();
 				head.stop();
-				Delay.msDelay(1000);
+				Delay.msDelay(200);
 				// if (direction > DEVIATION) {
 				// left.setPower(80);
 				// right.setPower(-10);
