@@ -3,7 +3,7 @@ package nl.hva.miw.robot.cohort12;
 import lejos.hardware.Sound;
 
 public class Mario extends Thread implements Runnable {
-	
+
 	private final static int C4 = 262;
 	private final static int D4 = 294;
 	private final static int E4 = 330;
@@ -25,7 +25,7 @@ public class Mario extends Thread implements Runnable {
 
 	private final static int C6 = 1047;
 	private int times;
-	boolean play = true;
+	private volatile boolean play = true;
 
 	public void setTimes(int times) {
 		this.times = times;
@@ -38,14 +38,14 @@ public class Mario extends Thread implements Runnable {
 	public boolean isPlay() {
 		return play;
 	}
-	
-	public void terminate() {
-        play = false;
-    }
+
+	public void stopRunning() {
+		play = false;
+	}
 
 	public void playMario() {
 		times = 2;
-		int vol = Sound.getVolume();
+//		int vol = Sound.getVolume();
 		System.out.println("I have to find my beacon!");
 		Sound.setVolume(20);
 
@@ -76,53 +76,52 @@ public class Mario extends Thread implements Runnable {
 			play(D5, 80, 75);
 			play(B4, 80, 250);
 		}
-		
-		play(G5, 100, 100);
-		play(Fs5, 100, 150);
-		play(E5, 100, 150);
-		play(Ds5, 150, 300);
-		play(E5, 150, 300);
-		play(G4, 100, 150);
-		play(A4, 100, 150);
-		play(B4, 100, 300);
-		play(A4, 100, 150);
-		play(B4, 100, 100);
-		play(D5, 100, 225);
-		play(B4, 100, 300);
-		play(G5, 100, 100);
-		play(Fs5, 100, 150);
-		play(E5, 100, 150);
-		play(Ds5, 150, 300);
-		play(E5, 200, 300);
-		play(C6, 80, 300);
-		play(C6, 80, 150);
-		play(C6, 80, 300);
-		play(G4, 100, 300);
-		play(B4, 100, 300);
-		// Chorus 2:
-		play(G5, 100, 100);
-		play(Fs5, 100, 150);
-		play(E5, 100, 150);
-		play(Ds5, 150, 300);
-		play(E5, 150, 300);
-		play(G4, 100, 150);
-		play(A4, 100, 150);
-		play(B4, 100, 300);
-		play(A4, 100, 150);
-		play(B4, 100, 100);
-		play(D5, 100, 425);
-		// End 2
-		play(D5, 100, 450);
-		play(Cs5, 100, 425);
-		play(B4, 100, 350);
-		play(G4, 100, 300);
-		play(B4, 100, 300);
-		play(B4, 100, 150);
-		play(B4, 100, 300);
-		play(B4, 100, 300);
 
+//		play(G5, 100, 100);
+//		play(Fs5, 100, 150);
+//		play(E5, 100, 150);
+//		play(Ds5, 150, 300);
+//		play(E5, 150, 300);
+//		play(G4, 100, 150);
+//		play(A4, 100, 150);
+//		play(B4, 100, 300);
+//		play(A4, 100, 150);
+//		play(B4, 100, 100);
+//		play(D5, 100, 225);
+//		play(B4, 100, 300);
+//		play(G5, 100, 100);
+//		play(Fs5, 100, 150);
+//		play(E5, 100, 150);
+//		play(Ds5, 150, 300);
+//		play(E5, 200, 300);
+//		play(C6, 80, 300);
+//		play(C6, 80, 150);
+//		play(C6, 80, 300);
+//		play(G4, 100, 300);
+//		play(B4, 100, 300);
+//		// Chorus 2:
+//		play(G5, 100, 100);
+//		play(Fs5, 100, 150);
+//		play(E5, 100, 150);
+//		play(Ds5, 150, 300);
+//		play(E5, 150, 300);
+//		play(G4, 100, 150);
+//		play(A4, 100, 150);
+//		play(B4, 100, 300);
+//		play(A4, 100, 150);
+//		play(B4, 100, 100);
+//		play(D5, 100, 425);
+//		// End 2
+//		play(D5, 100, 450);
+//		play(Cs5, 100, 425);
+//		play(B4, 100, 350);
+//		play(G4, 100, 300);
+//		play(B4, 100, 300);
+//		play(B4, 100, 150);
+//		play(B4, 100, 300);
+//		play(B4, 100, 300);
 
-		Sound.setVolume(vol);
+//		Sound.setVolume(vol);
 	}
 
 	protected static void play(int freq, int dur, int delay) {
@@ -137,6 +136,9 @@ public class Mario extends Thread implements Runnable {
 
 	@Override
 	public void run() {
-		playMario();
+		while (play) {
+			playMario();
+		}
+		System.out.println("Stopped Mario music....");
 	}
 }
