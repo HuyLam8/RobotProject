@@ -39,7 +39,6 @@ public class FollowBeaconLauncher {
 
 	Grip newGrip = new Grip();
 	int distance;
-	int tachoCount;
 
 	SensorMode seekBeacon = infrared.getSeekMode();
 	float[] sample = new float[seekBeacon.sampleSize()];
@@ -51,18 +50,16 @@ public class FollowBeaconLauncher {
 		System.out.println("Infrared Sensor\n");
 
 		Button.LEDPattern(4); // flash green led and
-//		Sound.beepSequenceUp(); // make sound when ready.
+		Sound.beepSequenceUp(); // make sound when ready.
 
 		System.out.println("Initiating Follow Beacon!");
-		// Button.waitForAnyPress();
+		Button.waitForAnyPress();
 
 		FollowBeaconLauncher test = new FollowBeaconLauncher();
 		test.seekBeacon();
 	}
 
 	public void seekBeacon() {
-
-		head.resetTachoCount();
 
 		while (Button.ESCAPE.isUp() || (distance > MIN_DISTANCE && distance < MAX_DISTANCE)) {
 			// reads bearing and distance every second
@@ -72,16 +69,14 @@ public class FollowBeaconLauncher {
 			System.out.println("Direction: " + direction);
 			int distance = (int) sample[1];
 			System.out.println("Distance: " + distance);
-			tachoCount = head.getTachoCount();
-			System.out.println("Tachocount: " + tachoCount);
 
 			// if beacon too far it will drive forward
 			if (direction == 0 && distance >= 100) {
 				left.setPower(40);
 				right.setPower(40);
-				Delay.msDelay(200);
-//				head.rotateTo(-45);
-//				head.rotateTo(90);
+				Delay.msDelay(1000);
+				// head.rotateTo(-45);
+				// head.rotateTo(90);
 				// headBeaconScanner.start();
 
 				// for (int i = 0; direction == 0 && distance >= 100; i++) {
@@ -94,30 +89,32 @@ public class FollowBeaconLauncher {
 				// }
 
 				// gear will turn backward and head will turn to the right
-			} else if (direction > DEVIATION && tachoCount > -90) {
+			} else if (direction > DEVIATION) {
 				// headBeaconScanner.interrupt();
 
 				int speed = (direction - DEVIATION) * 10;
 				System.out.println("Speed: " + speed);
-				head.setSpeed(speed);
-				head.backward();
+//				head.setSpeed(speed);
+//				head.backward();
+//				Delay.msDelay(500);
 				// move to the right
-				left.setPower(80);
+				left.setPower(40);
 				right.setPower(-10);
-				Delay.msDelay(200);
+				Delay.msDelay(500);
 
 				// gear will turn forward and head will turn to the left
-			} else if (direction < DEVIATION && tachoCount < 90) {
+			} else if (direction < DEVIATION) {
 				// headBeaconScanner.interrupt();
 
 				int speed = (direction - DEVIATION) * 10;
 				System.out.println("Speed: " + speed);
-				head.setSpeed(speed);
-				head.forward();
+//				head.setSpeed(speed);
+//				head.forward();
+//				Delay.msDelay(500);
 				// move to the left
 				left.setPower(-10);
-				right.setPower(80);
-				Delay.msDelay(200);
+				right.setPower(40);
+				Delay.msDelay(1000);
 
 				// after checking direction sample value for the conditions continue to check
 				// conditions for distance sample value
@@ -125,22 +122,23 @@ public class FollowBeaconLauncher {
 				// if found stop and initiate claw motor to pick up object
 				// closest distance value is 1
 				// if beacon is right in front of IR sensor, stop turning head and drive forward
-			} else if ((direction >= -6 && direction <= 0) || tachoCount > 90 || tachoCount < -90) {
+			} else if (direction >= -6 && direction <= 0) {
 				// headBeaconScanner.interrupt();
 				head.stop();
-				if (direction > DEVIATION) {
-					left.setPower(80);
-					right.setPower(-10);
-					Delay.msDelay(200);
-				} else if (direction > DEVIATION){
-					left.setPower(-10);
-					right.setPower(80);
-					Delay.msDelay(200);
-				}
+				Delay.msDelay(1000);
+				// if (direction > DEVIATION) {
+				// left.setPower(80);
+				// right.setPower(-10);
+				// Delay.msDelay(500);
+				// } else if (direction > DEVIATION){
+				// left.setPower(-10);
+				// right.setPower(80);
+				// Delay.msDelay(500);
+				// }
 				if (distance > ZERO && distance <= MIN_DISTANCE) {
 					left.stop();
 					right.stop();
-//					Sound.beepSequenceUp();
+					Sound.beepSequenceUp();
 					System.out.println("I have found my beacon!");
 					newGrip.closeGrip(claw);
 					newGrip.openGrip(claw);
