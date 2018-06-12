@@ -103,7 +103,8 @@ public class ObjectAvoider {
 		System.out.println("Press a key to start the Object Avoider");
 		Button.waitForAnyPress();
 
-		for (int numberOfObjectsPassed = 0; numberOfObjectsPassed < numberOfObjectsToBePassed; numberOfObjectsPassed++) {
+		for (int numberOfObjectsPassed = 0; numberOfObjectsPassed < numberOfObjectsToBePassed
+				&& Button.ESCAPE.isUp(); numberOfObjectsPassed++) {
 
 			while (Button.ESCAPE.isUp()) {
 
@@ -150,6 +151,7 @@ public class ObjectAvoider {
 		motorLeft.close();
 		motorRight.close();
 		motorOfHead.close();
+		infraRedSensor.close();
 
 	}
 
@@ -172,22 +174,23 @@ public class ObjectAvoider {
 	public void headTurns90DegreesTo(String direction) {
 		int motorRotationRequiredForHeadToMakeA90DegreesTurn = 65;
 		if (direction.equals("L")) {
-			motorOfHead.rotate(motorRotationRequiredForHeadToMakeA90DegreesTurn);
+			motorOfHead.rotate(motorRotationRequiredForHeadToMakeA90DegreesTurn, true);
 			motorOfHead.waitComplete();
 		}
 		if (direction.equals("R")) {
-			motorOfHead.rotate(-motorRotationRequiredForHeadToMakeA90DegreesTurn);
+			motorOfHead.rotate(-motorRotationRequiredForHeadToMakeA90DegreesTurn, true);
 			motorOfHead.waitComplete();
 		}
 	}
 
-	private void keepCalmlyGoingForward(int largeOrSmallDistance) {
-		if (largeOrSmallDistance == UP_TO_OBJECT) {
-			while (largeOrSmallDistance > SMALLEST_DISTANCE_TO_OBJECT) {
-				SensorMode distance = infraRedSensor.getDistanceMode();
-				float[] sample = new float[distance.sampleSize()];
-				distance.fetchSample(sample, 0);
-				int measuredDistance = (int) sample[0];
+	private void keepCalmlyGoingForward(int upToObjectOrUntilObjectIsPassed) {
+		if (upToObjectOrUntilObjectIsPassed == UP_TO_OBJECT) {
+			int measuredDistance = upToObjectOrUntilObjectIsPassed;
+			while (measuredDistance > SMALLEST_DISTANCE_TO_OBJECT) {
+				SensorMode distanceMeasurer = infraRedSensor.getDistanceMode();
+				float[] sample = new float[distanceMeasurer.sampleSize()];
+				distanceMeasurer.fetchSample(sample, 0);
+				measuredDistance = (int) sample[0];
 				System.out.println("Distance: " + measuredDistance);
 				motorLeft.rotate(GO_CALMLY_FORWARD, true);
 				motorRight.rotate(GO_CALMLY_FORWARD, true);
@@ -195,13 +198,14 @@ public class ObjectAvoider {
 		}
 		// There has to be enough space behind the object for the robot to pass the
 		// follow-up object as well, hence the multiplication of the
-		// SMALLEST_DISTANCE_TO_OBJECT by two
-		if (largeOrSmallDistance == UNTIL_OBJECT_IS_PASSED) {
-			while (largeOrSmallDistance < 2 * SMALLEST_DISTANCE_TO_OBJECT) {
-				SensorMode distance = infraRedSensor.getDistanceMode();
-				float[] sample = new float[distance.sampleSize()];
-				distance.fetchSample(sample, 0);
-				int measuredDistance = (int) sample[0];
+		// SMALLEST_DISTANCE_TO_OBJECT
+		if (upToObjectOrUntilObjectIsPassed == UNTIL_OBJECT_IS_PASSED) {
+			int measuredDistance = upToObjectOrUntilObjectIsPassed;
+			while (measuredDistance < 2 * SMALLEST_DISTANCE_TO_OBJECT) {
+				SensorMode distanceMeasurer = infraRedSensor.getDistanceMode();
+				float[] sample = new float[distanceMeasurer.sampleSize()];
+				distanceMeasurer.fetchSample(sample, 0);
+				measuredDistance = (int) sample[0];
 				System.out.println("Distance: " + measuredDistance);
 				motorLeft.rotate(GO_CALMLY_FORWARD, true);
 				motorRight.rotate(GO_CALMLY_FORWARD, true);
