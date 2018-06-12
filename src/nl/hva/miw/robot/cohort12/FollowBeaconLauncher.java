@@ -60,7 +60,8 @@ public class FollowBeaconLauncher {
 	}
 
 	public void seekBeacon() {
-
+		Mario newMario = new Mario();
+		newMario.start();
 		while (Button.ESCAPE.isUp() || (distance > MIN_DISTANCE && distance < MAX_DISTANCE)) {
 			// reads bearing and distance every second
 			seekBeacon.fetchSample(sample, 0);
@@ -98,7 +99,7 @@ public class FollowBeaconLauncher {
 //				head.backward();
 //				Delay.msDelay(500);
 				// move to the right
-				left.setPower(speed);
+				left.setPower(40);
 				right.setPower(-10);
 				Delay.msDelay(200);
 
@@ -113,7 +114,7 @@ public class FollowBeaconLauncher {
 //				Delay.msDelay(500);
 				// move to the left
 				left.setPower(-10);
-				right.setPower(speed);
+				right.setPower(40);
 				Delay.msDelay(200);
 
 				// after checking direction sample value for the conditions continue to check
@@ -124,7 +125,9 @@ public class FollowBeaconLauncher {
 				// if beacon is right in front of IR sensor, stop turning head and drive forward
 			} else if (direction >= -6 && direction <= 0) {
 				// headBeaconScanner.interrupt();
-				head.stop();
+//				head.stop();
+				left.setPower(40);
+				right.setPower(40);
 				Delay.msDelay(200);
 				// if (direction > DEVIATION) {
 				// left.setPower(80);
@@ -136,13 +139,16 @@ public class FollowBeaconLauncher {
 				// Delay.msDelay(500);
 				// }
 				if (distance > ZERO && distance <= MIN_DISTANCE) {
+					Sound.setVolume(0);
 					left.stop();
 					right.stop();
 					Sound.beepSequenceUp();
 					System.out.println("I have found my beacon!");
 					newGrip.closeGrip(claw);
 					newGrip.openGrip(claw);
-					// Voor opdracht 3 - rijden naar beacon vastpakken en naar achteren slepen,
+					// call stopRunning() method whenever you want to stop a thread
+					newMario.setTimes(0);
+					newMario.stopRunning();
 					break;
 				}
 			}
@@ -152,7 +158,7 @@ public class FollowBeaconLauncher {
 		left.close();
 		right.close();
 		infrared.close();
-		head.close();
+//		head.close();
 		claw.close();
 	}
 }
