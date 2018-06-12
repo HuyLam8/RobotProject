@@ -28,9 +28,15 @@ public class Rotator extends Thread implements Runnable {
 	// motorRight.waitComplete();
 	// }
 	// }
+	
+
+	public Rotator(String direction) {
+		super();
+		this.direction = direction;
+	}
 
 	public Rotator() {
-		super();
+		// TODO Auto-generated constructor stub
 	}
 
 	public void headTurns90DegreesTo(String direction) {
@@ -47,12 +53,7 @@ public class Rotator extends Thread implements Runnable {
 
 	@Override
 	public void run() {
-		int numberOfObjectsPassed = 2;
-		if (numberOfObjectsPassed % 2 == 0) {
-			headTurns90DegreesTo("R");
-		} else if (numberOfObjectsPassed % 2 == 1) {
-			headTurns90DegreesTo("L");
-		}
+		headTurns90DegreesTo(direction);
 	}
 
 }

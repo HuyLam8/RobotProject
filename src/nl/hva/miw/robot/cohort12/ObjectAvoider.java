@@ -118,15 +118,15 @@ public class ObjectAvoider extends Rotator {
 				// Robot faces away from the object, after which the head turns towards it, so
 				// the distance to the object can still be measured
 				if (numberOfObjectsPassed % 2 == 0) {
+					new Thread(new Rotator("R")).start();
 					robotTurns90DegreesTo("L");
-					headRotator.start();
-				}
+									}
 				// Every next object will be passed on the other side than the previous object.
 				// Just for the fun of it, but also to make sure that the robot does not
 				// 'depart' too much by passing every object at the same side
 				if (numberOfObjectsPassed % 2 == 1) {
+					new Thread(new Rotator("L")).start();
 					robotTurns90DegreesTo("R");
-					headRotator.start();
 				}
 
 				// Now, the robot will drive more or less parallel to the object, until it can
@@ -140,13 +140,13 @@ public class ObjectAvoider extends Rotator {
 				// Now the robot will turn again, so it can pass the object
 				// Next, the head will turn as well, so it aims at the path of the robot again
 				if (numberOfObjectsPassed % 2 == 0) {
+					new Thread(new Rotator("L")).start();
 					robotTurns90DegreesTo("R");
-					headTurns90DegreesTo("L");
 				}
 				// Again, other way around for consecutively passed objects
 				if (numberOfObjectsPassed % 2 == 1) {
+					new Thread(new Rotator("R")).start();
 					robotTurns90DegreesTo("L");
-					headTurns90DegreesTo("R");
 				}
 			}
 		}
