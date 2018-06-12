@@ -1,5 +1,7 @@
 package nl.hva.miw.robot.cohort12;
 
+import java.awt.Robot;
+
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
 import lejos.hardware.motor.*;
@@ -16,10 +18,10 @@ import lejos.robotics.RegulatedMotor;
  *
  */
 
-public class ObjectAvoider {
+public class ObjectAvoider extends Rotator {
 	private static RegulatedMotor motorRight;
 	private static RegulatedMotor motorLeft;
-	private static RegulatedMotor motorOfHead;
+	// private static RegulatedMotor motorOfHead;
 	private static UnregulatedMotor motorOfGrip;
 	private static ColorSensor colorSensor;
 	private static EV3IRSensor infraRedSensor;
@@ -53,7 +55,7 @@ public class ObjectAvoider {
 		super();
 		ObjectAvoider.motorRight = motorRight;
 		ObjectAvoider.motorLeft = motorLeft;
-		ObjectAvoider.motorOfHead = motorOfHead;
+		// ObjectAvoider.motorOfHead = motorOfHead;
 		ObjectAvoider.motorOfGrip = motorOfGrip;
 		ObjectAvoider.colorSensor = colorSensor;
 		ObjectAvoider.infraRedSensor = infraRedSensor;
@@ -86,7 +88,7 @@ public class ObjectAvoider {
 			UnregulatedMotor motorOfGrip, ColorSensor colorSensor, EV3IRSensor infraRedSensor) {
 		ObjectAvoider.motorRight = motorRight;
 		ObjectAvoider.motorLeft = motorLeft;
-		ObjectAvoider.motorOfHead = motorOfHead;
+		Rotator.motorOfHead = motorOfHead;
 		ObjectAvoider.motorOfGrip = motorOfGrip;
 		ObjectAvoider.colorSensor = colorSensor;
 		ObjectAvoider.infraRedSensor = infraRedSensor;
@@ -99,6 +101,7 @@ public class ObjectAvoider {
 	 * direction).
 	 */
 	public void startObjectAvoider() {
+		Rotator headRotator = new Rotator();
 		Sound.beepSequence();
 		System.out.println("Press a key to start the Object Avoider");
 		Button.waitForAnyPress();
@@ -116,14 +119,14 @@ public class ObjectAvoider {
 				// the distance to the object can still be measured
 				if (numberOfObjectsPassed % 2 == 0) {
 					robotTurns90DegreesTo("L");
-					headTurns90DegreesTo("R");
+					headRotator.start();
 				}
 				// Every next object will be passed on the other side than the previous object.
 				// Just for the fun of it, but also to make sure that the robot does not
 				// 'depart' too much by passing every object at the same side
 				if (numberOfObjectsPassed % 2 == 1) {
 					robotTurns90DegreesTo("R");
-					headTurns90DegreesTo("L");
+					headRotator.start();
 				}
 
 				// Now, the robot will drive more or less parallel to the object, until it can
@@ -150,38 +153,27 @@ public class ObjectAvoider {
 
 		motorLeft.close();
 		motorRight.close();
-		motorOfHead.close();
+		Rotator.motorOfHead.close();
 		infraRedSensor.close();
 
 	}
 
 	public void robotTurns90DegreesTo(String direction) {
-		int requiredMotorRotationFor90Degrees = 400; // negative for direction
-		if (direction.equals("L")) {
-			motorLeft.rotate(-requiredMotorRotationFor90Degrees, true);
-			motorRight.rotate(requiredMotorRotationFor90Degrees, true);
-			motorLeft.waitComplete();
-			motorRight.waitComplete();
-		}
-		if (direction.equals("R")) {
-			motorLeft.rotate(requiredMotorRotationFor90Degrees, true);
-			motorRight.rotate(-requiredMotorRotationFor90Degrees, true);
-			motorLeft.waitComplete();
-			motorRight.waitComplete();
-		}
+	int requiredMotorRotationFor90Degrees = 400; // negative for direction
+	if (direction.equals("L")) {
+		motorLeft.rotate(-requiredMotorRotationFor90Degrees, true);
+		motorRight.rotate(requiredMotorRotationFor90Degrees, true);
+		motorLeft.waitComplete();
+		motorRight.waitComplete();
 	}
+	if (direction.equals("R")) {
+		motorLeft.rotate(requiredMotorRotationFor90Degrees, true);
+		motorRight.rotate(-requiredMotorRotationFor90Degrees, true);
+		motorLeft.waitComplete();
+		motorRight.waitComplete();
+	}
+}
 
-	public void headTurns90DegreesTo(String direction) {
-		int motorRotationRequiredForHeadToMakeA90DegreesTurn = 65;
-		if (direction.equals("L")) {
-			motorOfHead.rotate(motorRotationRequiredForHeadToMakeA90DegreesTurn, true);
-			motorOfHead.waitComplete();
-		}
-		if (direction.equals("R")) {
-			motorOfHead.rotate(-motorRotationRequiredForHeadToMakeA90DegreesTurn, true);
-			motorOfHead.waitComplete();
-		}
-	}
 
 	private void keepCalmlyGoingForward(int upToObjectOrUntilObjectIsPassed) {
 		if (upToObjectOrUntilObjectIsPassed == UP_TO_OBJECT) {
