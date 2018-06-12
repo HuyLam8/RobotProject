@@ -30,7 +30,7 @@ public class AvoiderDieWerkt {
 	// A value of 40 equals approximately 15 centimeter, though this might differ
 	// per sensor
 	private static final int SMALLEST_DISTANCE_TO_OBJECT = 55;
-	private static final int GO_CALMLY_FORWARD = 360;
+	private static final int GO_CALMLY_FORWARD = 360; // 360
 	private static int numberOfObjectsToBePassed = 2;
 	private ArrayList<Integer> lijstMetTachoMetingen = new ArrayList<>();
 
@@ -103,11 +103,19 @@ public class AvoiderDieWerkt {
 	 */
 	public void run() {
 		startObjectAvoider();
+		System.out.println("klaar om weer terug te gaan");
+		for (Integer i : lijstMetTachoMetingen) {
+			System.out.println("eerste keer");
+			System.out.println(i);
+		}
 		comeBack(lijstMetTachoMetingen);
+		System.out.println("ben weer terug!");
+		motorLeft.close();
+		motorRight.close();
+		motorOfHead.close();
+		infraRedSensor.close();
 	}
-	
-	
-	
+
 	public void startObjectAvoider() {
 		Sound.beepSequence();
 		System.out.println("Press a key to start the Object Avoider");
@@ -158,10 +166,10 @@ public class AvoiderDieWerkt {
 			// System.out.println("einde eerste object: " + numberOfObjectsPassed);
 
 		}
-		motorLeft.close();
-		motorRight.close();
-		motorOfHead.close();
-		infraRedSensor.close();
+//		motorLeft.close();
+//		motorRight.close();
+//		motorOfHead.close();
+//		infraRedSensor.close();
 
 	}
 
@@ -254,16 +262,21 @@ public class AvoiderDieWerkt {
 	}
 
 	private static void comeBack(ArrayList<Integer> lijstMetTachoMetingen) {
-
-//		motorLeft.rotate(-lijstMetTachoMetingen.get(12), true); // 0
-//		motorRight.rotate(-lijstMetTachoMetingen.get(13), true); // 1
-//		motorLeft.waitComplete();
-//		motorRight.waitComplete();
+		System.out.println("nu ga ik weer terug");
+		// motorLeft.rotate(-lijstMetTachoMetingen.get(12), true); // 0
+		// motorRight.rotate(-lijstMetTachoMetingen.get(13), true); // 1
+		// motorLeft.waitComplete();
+		// motorRight.waitComplete();
+		for (Integer i : lijstMetTachoMetingen) {
+			System.out.println("nog eens");
+			System.out.println(i);
+		}
 		robotTurns90DegreesTo("R");
 		motorLeft.rotate(-lijstMetTachoMetingen.get(10), true); // 0
 		motorRight.rotate(-lijstMetTachoMetingen.get(11), true); // 1
 		motorLeft.waitComplete();
 		motorRight.waitComplete();
+		System.out.println("ben onderweg");
 		motorLeft.rotate(-lijstMetTachoMetingen.get(8), true); // 0
 		motorRight.rotate(-lijstMetTachoMetingen.get(9), true); // 1
 		motorLeft.waitComplete();
