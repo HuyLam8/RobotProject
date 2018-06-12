@@ -1,20 +1,16 @@
 package nl.hva.miw.robot.cohort12;
 
-import lejos.hardware.Brick;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
-import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.motor.*;
-import lejos.hardware.port.*;
 import lejos.hardware.sensor.*;
 import lejos.robotics.RegulatedMotor;
-import lejos.utility.Delay;
 
 /**
  * With (an instance of) this class, a robot can move forward while avoiding all
- * objects on its way. It's possible to set the amount of objects to be passed.
- * The robot will pass the first object at the left, the second at the right,
- * the third at the left, the fourth at the right, etc.
+ * objects on its way. It's possible to set the amount of objects to be passed
+ * by the robot. The robot will pass the first object at the left, the second at
+ * the right, the third at the left, the fourth at the right, etc.
  * 
  * @author Bjorn Goos
  *
@@ -27,11 +23,13 @@ public class ObjectAvoider {
 	private static UnregulatedMotor motorOfGrip;
 	private static ColorSensor colorSensor;
 	private static EV3IRSensor infraRedSensor;
-	private static final int LARGE_DISTANCE = 1000;
-	private static final int SMALL_DISTANCE = 1;
+	private static final int UP_TO_OBJECT = 1000;
+	private static final int UNTIL_OBJECT_IS_PASSED = 1;
+	// A value of 40 equals approximately 15 centimeter, though this might differ
+	// per sensor
 	private static final int SMALLEST_DISTANCE_TO_OBJECT = 40;
 	private static final int GO_CALMLY_FORWARD = 360;
-	private static final int numberOfObjectsToBePassed = 2;
+	private static int numberOfObjectsToBePassed = 2;
 
 	/**
 	 * Instantiate an object avoider
@@ -48,18 +46,50 @@ public class ObjectAvoider {
 	 * @param colorSensor
 	 *            The sensor that measures color values
 	 * @param infraRedSensor
-	 *            The sensor that measures distances (and 'angels' for the Beacon)
+	 *            The sensor that measures distances (and 'angles' for the Beacon)
 	 */
-
 	public ObjectAvoider(RegulatedMotor motorRight, RegulatedMotor motorLeft, RegulatedMotor motorOfHead,
 			UnregulatedMotor motorOfGrip, ColorSensor colorSensor, EV3IRSensor infraRedSensor) {
 		super();
-		this.motorRight = motorRight;
-		this.motorLeft = motorLeft;
-		this.motorOfHead = motorOfHead;
-		this.motorOfGrip = motorOfGrip;
-		this.colorSensor = colorSensor;
-		this.infraRedSensor = infraRedSensor;
+		ObjectAvoider.motorRight = motorRight;
+		ObjectAvoider.motorLeft = motorLeft;
+		ObjectAvoider.motorOfHead = motorOfHead;
+		ObjectAvoider.motorOfGrip = motorOfGrip;
+		ObjectAvoider.colorSensor = colorSensor;
+		ObjectAvoider.infraRedSensor = infraRedSensor;
+	}
+
+	/**
+	 * In the current design, a colorSensor and motorOfGrip are not needed for
+	 * object avoidance.
+	 */
+	public ObjectAvoider(RegulatedMotor motorRight, RegulatedMotor motorLeft, RegulatedMotor motorOfHead,
+			EV3IRSensor infraRedSensor) {
+		this(motorRight, motorLeft, motorOfHead, null, null, infraRedSensor);
+	}
+
+	public ObjectAvoider(RegulatedMotor motorRight, RegulatedMotor motorLeft, RegulatedMotor motorOfHead,
+			UnregulatedMotor motorOfGrip, EV3IRSensor infraRedSensor) {
+		this(motorRight, motorLeft, motorOfHead, motorOfGrip, null, infraRedSensor);
+	}
+
+	public ObjectAvoider(RegulatedMotor motorRight, RegulatedMotor motorLeft, RegulatedMotor motorOfHead,
+			ColorSensor colorSensor, EV3IRSensor infraRedSensor) {
+		this(motorRight, motorLeft, motorOfHead, null, colorSensor, infraRedSensor);
+	}
+
+	public ObjectAvoider() {
+		this(null, null, null, null, null, null);
+	}
+
+	public void useObjectAvoider(RegulatedMotor motorRight, RegulatedMotor motorLeft, RegulatedMotor motorOfHead,
+			UnregulatedMotor motorOfGrip, ColorSensor colorSensor, EV3IRSensor infraRedSensor) {
+		ObjectAvoider.motorRight = motorRight;
+		ObjectAvoider.motorLeft = motorLeft;
+		ObjectAvoider.motorOfHead = motorOfHead;
+		ObjectAvoider.motorOfGrip = motorOfGrip;
+		ObjectAvoider.colorSensor = colorSensor;
+		ObjectAvoider.infraRedSensor = infraRedSensor;
 	}
 
 	/**
@@ -79,10 +109,7 @@ public class ObjectAvoider {
 
 				// Let the robot drive calmly towards the object, until the object is nearer
 				// than the SMALLEST_DISTANCE_TO_OBJECT
-				int measuredDistance = LARGE_DISTANCE;
-				while (measuredDistance > SMALLEST_DISTANCE_TO_OBJECT) {
-					keepCalmlyGoingForward();
-				}
+				keepCalmlyGoingForward(UP_TO_OBJECT);
 
 				// Robot faces away from the object, after which the head turns towards it, so
 				// the distance to the object can still be measured
@@ -100,12 +127,7 @@ public class ObjectAvoider {
 
 				// Now, the robot will drive more or less parallel to the object, until it can
 				// no longer see it
-				// There has to be enough space behind the object for the robot to pass the
-				// follow-up object as well, hence the multiplication with two
-				int followUpDistance = SMALL_DISTANCE;
-				while (followUpDistance < 2 * SMALLEST_DISTANCE_TO_OBJECT) {
-					keepCalmlyGoingForward();
-				}
+				keepCalmlyGoingForward(UNTIL_OBJECT_IS_PASSED);
 
 				// In case the robot is quite large, it has to drive a little bit extra, so the
 				// whole robot can pass the object
@@ -118,7 +140,7 @@ public class ObjectAvoider {
 					headTurns90DegreesTo("L");
 				}
 				// Again, other way around for consecutively passed objects
-				if (numberOfObjectsPassed % 2 == 0) {
+				if (numberOfObjectsPassed % 2 == 1) {
 					robotTurns90DegreesTo("L");
 					headTurns90DegreesTo("R");
 				}
@@ -159,14 +181,32 @@ public class ObjectAvoider {
 		}
 	}
 
-	private void keepCalmlyGoingForward() {
-		SensorMode distance = infraRedSensor.getDistanceMode();
-		float[] sample = new float[distance.sampleSize()];
-		distance.fetchSample(sample, 0);
-		int measuredDistance = (int) sample[0];
-		System.out.println("Distance: " + measuredDistance);
-		motorLeft.rotate(GO_CALMLY_FORWARD, true);
-		motorRight.rotate(GO_CALMLY_FORWARD, true);
+	private void keepCalmlyGoingForward(int largeOrSmallDistance) {
+		if (largeOrSmallDistance == UP_TO_OBJECT) {
+			while (largeOrSmallDistance > SMALLEST_DISTANCE_TO_OBJECT) {
+				SensorMode distance = infraRedSensor.getDistanceMode();
+				float[] sample = new float[distance.sampleSize()];
+				distance.fetchSample(sample, 0);
+				int measuredDistance = (int) sample[0];
+				System.out.println("Distance: " + measuredDistance);
+				motorLeft.rotate(GO_CALMLY_FORWARD, true);
+				motorRight.rotate(GO_CALMLY_FORWARD, true);
+			}
+		}
+		// There has to be enough space behind the object for the robot to pass the
+		// follow-up object as well, hence the multiplication of the
+		// SMALLEST_DISTANCE_TO_OBJECT by two
+		if (largeOrSmallDistance == UNTIL_OBJECT_IS_PASSED) {
+			while (largeOrSmallDistance < 2 * SMALLEST_DISTANCE_TO_OBJECT) {
+				SensorMode distance = infraRedSensor.getDistanceMode();
+				float[] sample = new float[distance.sampleSize()];
+				distance.fetchSample(sample, 0);
+				int measuredDistance = (int) sample[0];
+				System.out.println("Distance: " + measuredDistance);
+				motorLeft.rotate(GO_CALMLY_FORWARD, true);
+				motorRight.rotate(GO_CALMLY_FORWARD, true);
+			}
+		}
 	}
 
 	private void littleBitExtraForward() {
@@ -176,4 +216,9 @@ public class ObjectAvoider {
 		motorLeft.waitComplete();
 		motorRight.waitComplete();
 	}
+
+	public static void setNumberOfObjectsToBePassed(int numberOfObjectsToBePassed) {
+		ObjectAvoider.numberOfObjectsToBePassed = numberOfObjectsToBePassed;
+	}
+
 }
