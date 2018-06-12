@@ -1,10 +1,13 @@
 package nl.hva.miw.robot.cohort12;
 
+import java.util.ArrayList;
+
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
 import lejos.hardware.motor.*;
 import lejos.hardware.sensor.*;
 import lejos.robotics.RegulatedMotor;
+import lejos.utility.Delay;
 
 /**
  * With (an instance of) this class, a robot can move forward while avoiding all
@@ -27,9 +30,10 @@ public class ObjectAvoider {
 	private static final int UNTIL_OBJECT_IS_PASSED = 1;
 	// A value of 40 equals approximately 15 centimeter, though this might differ
 	// per sensor
-	private static final int SMALLEST_DISTANCE_TO_OBJECT = 40;
-	private static final int GO_CALMLY_FORWARD = 360;
-	private static int numberOfObjectsToBePassed = 1;
+	private static final int SMALLEST_DISTANCE_TO_OBJECT = 55;
+	private static final int GO_CALMLY_FORWARD = 360; // 360
+	private static int numberOfObjectsToBePassed = 2;
+	private ArrayList<Integer> lijstMetTachoMetingen = new ArrayList<>();
 
 	/**
 	 * Instantiate an object avoider
@@ -98,6 +102,20 @@ public class ObjectAvoider {
 	 * 'head' of the robot is 'straight' (i.e. lined with the robot's moving
 	 * direction).
 	 */
+	public void run() {
+		startObjectAvoider();
+		for (Integer i : lijstMetTachoMetingen) {
+			System.out.println("eerste keer");
+			System.out.println(i);
+		}
+		scoreAGoal();
+		comeBack(lijstMetTachoMetingen);
+		motorLeft.close();
+		motorRight.close();
+		motorOfHead.close();
+		infraRedSensor.close();
+	}
+
 	public void startObjectAvoider() {
 		Sound.beepSequence();
 		System.out.println("Press a key to start the Object Avoider");
@@ -105,7 +123,7 @@ public class ObjectAvoider {
 
 		int numberOfObjectsPassed = 0;
 		while (numberOfObjectsPassed < numberOfObjectsToBePassed && Button.ESCAPE.isUp()) {
-			System.out.println("begin eerste object: " + numberOfObjectsPassed);
+			// System.out.println("begin eerste object: " + numberOfObjectsPassed);
 
 			// Let the robot drive calmly towards the object, until the object is nearer
 			// than the SMALLEST_DISTANCE_TO_OBJECT
@@ -145,17 +163,11 @@ public class ObjectAvoider {
 				headTurns90DegreesTo("R");
 			}
 			numberOfObjectsPassed++;
-			System.out.println("einde eerste object: " + numberOfObjectsPassed);
 		}
-
-		motorLeft.close();
-		motorRight.close();
-		motorOfHead.close();
-		infraRedSensor.close();
 
 	}
 
-	public void robotTurns90DegreesTo(String direction) {
+	public static void robotTurns90DegreesTo(String direction) {
 		int requiredMotorRotationFor90Degrees = 400; // negative for direction
 		if (direction.equals("L")) {
 			motorLeft.rotate(-requiredMotorRotationFor90Degrees, true);
@@ -186,6 +198,8 @@ public class ObjectAvoider {
 	private void keepCalmlyGoingForward(int upToObjectOrUntilObjectIsPassed) {
 		if (upToObjectOrUntilObjectIsPassed == UP_TO_OBJECT) {
 			int measuredDistance = upToObjectOrUntilObjectIsPassed;
+			motorRight.resetTachoCount();
+			motorLeft.resetTachoCount();
 			while (measuredDistance > SMALLEST_DISTANCE_TO_OBJECT) {
 				SensorMode distanceMeasurer = infraRedSensor.getDistanceMode();
 				float[] sample = new float[distanceMeasurer.sampleSize()];
@@ -194,16 +208,14 @@ public class ObjectAvoider {
 				System.out.println("Distance: " + measuredDistance);
 				motorLeft.rotate(GO_CALMLY_FORWARD, true);
 				motorRight.rotate(GO_CALMLY_FORWARD, true);
-				// if (!Button.ESCAPE.isUp()) {
-				// System.exit(1);
-				// }
 			}
+			lijstMetTachoMetingen.add(motorRight.getTachoCount());
+			lijstMetTachoMetingen.add(motorLeft.getTachoCount());
 		}
-		// There has to be enough space behind the object for the robot to pass the
-		// follow-up object as well, hence the multiplication of the
-		// SMALLEST_DISTANCE_TO_OBJECT
 		if (upToObjectOrUntilObjectIsPassed == UNTIL_OBJECT_IS_PASSED) {
 			int measuredDistance = upToObjectOrUntilObjectIsPassed;
+			motorRight.resetTachoCount();
+			motorLeft.resetTachoCount();
 			while (measuredDistance < 2 * SMALLEST_DISTANCE_TO_OBJECT) {
 				SensorMode distanceMeasurer = infraRedSensor.getDistanceMode();
 				float[] sample = new float[distanceMeasurer.sampleSize()];
@@ -212,23 +224,68 @@ public class ObjectAvoider {
 				System.out.println("Distance: " + measuredDistance);
 				motorLeft.rotate(GO_CALMLY_FORWARD, true);
 				motorRight.rotate(GO_CALMLY_FORWARD, true);
-//				if (!Button.ESCAPE.isUp()) {
-//					System.exit(1);
-//				}
 			}
+			lijstMetTachoMetingen.add(motorRight.getTachoCount());
+			lijstMetTachoMetingen.add(motorLeft.getTachoCount());
 		}
 	}
 
 	private void littleBitExtraForward() {
-		int extraDistance = 700;
+		motorRight.resetTachoCount();
+		motorLeft.resetTachoCount();
+		int extraDistance = 1000;
 		motorLeft.rotate(extraDistance, true);
 		motorRight.rotate(extraDistance, true);
 		motorLeft.waitComplete();
 		motorRight.waitComplete();
+		lijstMetTachoMetingen.add(motorRight.getTachoCount());
+		lijstMetTachoMetingen.add(motorLeft.getTachoCount());
 	}
 
 	public static void setNumberOfObjectsToBePassed(int numberOfObjectsToBePassed) {
 		ObjectAvoider.numberOfObjectsToBePassed = numberOfObjectsToBePassed;
+	}
+
+	private static void comeBack(ArrayList<Integer> lijstMetTachoMetingen) {
+		robotTurns90DegreesTo("R");
+		motorLeft.setSpeed(800);
+		motorRight.setSpeed(800);
+		motorLeft.rotate(-lijstMetTachoMetingen.get(10), true); // 0
+		motorRight.rotate(-lijstMetTachoMetingen.get(11), true); // 1
+		motorLeft.waitComplete();
+		motorRight.waitComplete();
+		System.out.println("ben onderweg");
+		motorLeft.rotate(-lijstMetTachoMetingen.get(8), true); // 0
+		motorRight.rotate(-lijstMetTachoMetingen.get(9), true); // 1
+		motorLeft.waitComplete();
+		motorRight.waitComplete();
+		robotTurns90DegreesTo("L");
+		motorLeft.rotate(-lijstMetTachoMetingen.get(6), true); // 0
+		motorRight.rotate(-lijstMetTachoMetingen.get(7), true); // 1
+		motorLeft.waitComplete();
+		motorRight.waitComplete();
+		robotTurns90DegreesTo("L");
+		motorLeft.rotate(-lijstMetTachoMetingen.get(4), true); // 0
+		motorRight.rotate(-lijstMetTachoMetingen.get(5), true); // 1
+		motorLeft.waitComplete();
+		motorRight.waitComplete();
+		motorLeft.rotate(-lijstMetTachoMetingen.get(2), true); // 0
+		motorRight.rotate(-lijstMetTachoMetingen.get(3), true); // 1
+		motorLeft.waitComplete();
+		motorRight.waitComplete();
+		robotTurns90DegreesTo("R");
+		motorLeft.rotate(-lijstMetTachoMetingen.get(0), true);
+		motorRight.rotate(-lijstMetTachoMetingen.get(1), true);
+		motorLeft.waitComplete();
+		motorRight.waitComplete();
+	}
+
+	public static void scoreAGoal() {
+		final int SPEED_OF_OPENING_AND_CLOSING = 40;
+		final int REQUIRED_TIME_OF_OPENING_AND_CLOSING = 3000;
+		motorOfGrip.backward();
+		motorOfGrip.setPower(SPEED_OF_OPENING_AND_CLOSING);
+		Delay.msDelay(REQUIRED_TIME_OF_OPENING_AND_CLOSING);
 	}
 
 }
