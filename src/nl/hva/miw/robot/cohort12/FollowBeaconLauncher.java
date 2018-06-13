@@ -2,6 +2,7 @@ package nl.hva.miw.robot.cohort12;
 
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
+import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.motor.EV3MediumRegulatedMotor;
 import lejos.hardware.motor.UnregulatedMotor;
 import lejos.hardware.port.MotorPort;
@@ -25,20 +26,20 @@ import lejos.utility.Delay;
 public class FollowBeaconLauncher {
 
 	private static final int ZERO = 0;
-	private static final int DEVIATION = -3;
-	private static final int MIN_DISTANCE = 15;
+	private static final int DEVIATION = -1;
+	private static final int MIN_DISTANCE = 1;
 	private static final int MAX_DISTANCE = 100;
 
 	// Create objects for each class
 	EV3IRSensor infrared = new EV3IRSensor(SensorPort.S1);
-	UnregulatedMotor left = new UnregulatedMotor(MotorPort.C);
-	UnregulatedMotor right = new UnregulatedMotor(MotorPort.D);
+	RegulatedMotor left = new EV3LargeRegulatedMotor(MotorPort.C);
+	RegulatedMotor right = new EV3LargeRegulatedMotor(MotorPort.D);
 	UnregulatedMotor claw = new UnregulatedMotor(MotorPort.A);
 	RegulatedMotor head = new EV3MediumRegulatedMotor(MotorPort.B);
 	Mario newMario = new Mario();
 	Grip newGrip = new Grip(claw);
 	int distance;
-	ControlDrive drive = new ControlDrive(right, left);
+	//ControlDrive drive = new ControlDrive(right, left);
 	boolean klaar = false;
 	
 	SensorMode seekBeacon = infrared.getSeekMode();
@@ -71,34 +72,43 @@ public class FollowBeaconLauncher {
 
 			// TOO FAR AWAY
 			if (direction == 0 && distance >= 100) {
-				left.setPower(40);
-				right.setPower(40);
-				Delay.msDelay(1000);
+//				left.setS(40);
+//				right.setPower(40);
+//				Delay.msDelay(100);
 			} 
 			
 			else {
-				int goalSpeed = 30;
-				double kP = 1.5;
+				int goalSpeed = 150;
+				double kP = 8;
 				int error = direction - DEVIATION;
 				int powerRight = (int) (goalSpeed + kP * error);
 				int powerLeft = (int)(goalSpeed - kP * error);
-				right.setPower(powerLeft);
-				left.setPower(powerRight);
+				
+				right.setSpeed(powerLeft);
+				left.setSpeed(powerRight);
+				right.forward();
+				left.forward();
 				if (direction > (DEVIATION -2) && direction < DEVIATION + 2) {
 					Sound.setVolume(20);
 					//Sound.beep();
 					
-					if (distance > 0 && distance < MIN_DISTANCE) {
-						drive.setPower(0, 0);
+					if (distance > 0 && distance <= MIN_DISTANCE) {
+						right.rotate(800, true);
+						left.rotate(800, true);
+//						right.forward();
+//						left.forward();
+						Delay.msDelay(2000);
+						left.stop();
+						right.stop();
 						Sound.setVolume(0);
 						newMario.setTimes(0);
 						newMario.stopRunning();
 						Sound.beepSequenceUp();
 						System.out.println("I have found my beacon!");
 						newGrip.closeGrip();
-						drive.setPower(-100, 100);
-						Delay.msDelay(1600);
-						drive.stop();
+//						drive.setPower(-100, 100);
+//						Delay.msDelay(1600);
+//						drive.stop();
 						newGrip.openGrip();
 						klaar = true;
 					}
