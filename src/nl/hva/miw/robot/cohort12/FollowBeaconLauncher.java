@@ -86,7 +86,7 @@ public class FollowBeaconLauncher {
 				left.setPower(powerRight);
 				if (direction > (DEVIATION -2) && direction < DEVIATION + 2) {
 					Sound.setVolume(20);
-					Sound.beep();
+					//Sound.beep();
 					
 					if (distance > 0 && distance < MIN_DISTANCE) {
 						drive.setPower(0, 0);
