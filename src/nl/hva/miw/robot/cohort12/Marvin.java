@@ -20,7 +20,6 @@ public class Marvin {
 	private static UnregulatedMotor motorOfGrip = new UnregulatedMotor(MotorPort.A);
 	//private static ColorSensor colorSensor = new ColorSensor(SensorPort.S4);
 	private static EV3IRSensor infraredSensor = new EV3IRSensor(SensorPort.S1);
-	private static EV3TouchSensor touchSensor = new EV3TouchSensor(SensorPort.S2);
 	private static Mario newMario = new Mario();
 
 	// The constants below are for setting the right mode of a LineFollower
