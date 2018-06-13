@@ -29,14 +29,13 @@ public class FollowBeaconLauncher {
 	private static final int MIN_DISTANCE = 15;
 	private static final int MAX_DISTANCE = 100;
 
+	// Create objects for each class
 	EV3IRSensor infrared = new EV3IRSensor(SensorPort.S1);
 	UnregulatedMotor left = new UnregulatedMotor(MotorPort.C);
 	UnregulatedMotor right = new UnregulatedMotor(MotorPort.D);
 	UnregulatedMotor claw = new UnregulatedMotor(MotorPort.A);
 	RegulatedMotor head = new EV3MediumRegulatedMotor(MotorPort.B);
-
-	// Thread headBeaconScanner = new Thread(new HeadBeaconScanner());
-
+	Mario newMario = new Mario();
 	Grip newGrip = new Grip(claw);
 	int distance;
 	ControlDrive drive = new ControlDrive(right, left);
@@ -44,9 +43,6 @@ public class FollowBeaconLauncher {
 	
 	SensorMode seekBeacon = infrared.getSeekMode();
 	float[] sample = new float[seekBeacon.sampleSize()];
-	// Brick brick;
-//	 TextLCD display = brick.getTextLCD();
-//	 SensorMode distance = infrared.getDistanceMode();
 
 	public static void main(String[] args) {
 		System.out.println("Infrared Sensor\n");
@@ -62,7 +58,8 @@ public class FollowBeaconLauncher {
 	}
 
 	public void seekBeacon() {
-
+		newMario.start();
+		
 		while (!klaar) {
 			// reads bearing and distance every second
 			seekBeacon.fetchSample(sample, 0);
@@ -93,7 +90,9 @@ public class FollowBeaconLauncher {
 					
 					if (distance > 0 && distance < MIN_DISTANCE) {
 						drive.setPower(0, 0);
-						Sound.setVolume(20);
+						Sound.setVolume(0);
+						newMario.setTimes(0);
+						newMario.stopRunning();
 						Sound.beepSequenceUp();
 						System.out.println("I have found my beacon!");
 						newGrip.closeGrip();
