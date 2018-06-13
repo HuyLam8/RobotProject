@@ -26,16 +26,16 @@ public class AvoiderDieWerkt {
 	private static UnregulatedMotor motorOfGrip;
 	private static ColorSensor colorSensor;
 	private static EV3IRSensor infraRedSensor;
-	private static EV3TouchSensor touchSensor;
 	private static Grip balletjeGrijper = new Grip();
 	private static final int UP_TO_OBJECT = 1000;
-	private static final int UNTIL_OBJECT_IS_PASSED = 2;
-	// A value of 40 equals approximately 15 centimeter, though this might differ
-	// per sensor
-	private static final int SMALLEST_DISTANCE_TO_OBJECT = 55;
-	private static final int GO_CALMLY_FORWARD = 360; // 360
+	private static final int UNTIL_OBJECT_IS_PASSED = 1;
+	// The distance number translates differently to an actual distance (in
+	// centimetres or inches) for each sensor
+	private static final int SMALLEST_DISTANCE_TO_OBJECT = 40; // 55
+	private static final int GO_CALMLY_FORWARD = 360;
+	private static final int REASONABLE_SPEED = 500;
 	private static int numberOfObjectsToBePassed = 2;
-	private static ArrayList<Integer> lijstMetTachoMetingen = new ArrayList<>();
+	private static ArrayList<Integer> listWithTachoMeasurements = new ArrayList<>();
 
 	/**
 	 * Instantiate an object avoider
@@ -55,8 +55,7 @@ public class AvoiderDieWerkt {
 	 *            The sensor that measures distances (and 'angles' for the Beacon)
 	 */
 	public AvoiderDieWerkt(RegulatedMotor motorRight, RegulatedMotor motorLeft, RegulatedMotor motorOfHead,
-			UnregulatedMotor motorOfGrip, ColorSensor colorSensor, EV3IRSensor infraRedSensor,
-			EV3TouchSensor touchSensor) {
+			UnregulatedMotor motorOfGrip, ColorSensor colorSensor, EV3IRSensor infraRedSensor) {
 		super();
 		AvoiderDieWerkt.motorRight = motorRight;
 		AvoiderDieWerkt.motorLeft = motorLeft;
@@ -64,30 +63,15 @@ public class AvoiderDieWerkt {
 		AvoiderDieWerkt.motorOfGrip = motorOfGrip;
 		AvoiderDieWerkt.colorSensor = colorSensor;
 		AvoiderDieWerkt.infraRedSensor = infraRedSensor;
-		AvoiderDieWerkt.touchSensor = touchSensor;
-	}
-
-	/**
-	 * In the current design, a colorSensor and motorOfGrip are not needed for
-	 * object avoidance.
-	 */
-	public AvoiderDieWerkt(RegulatedMotor motorRight, RegulatedMotor motorLeft, RegulatedMotor motorOfHead,
-			EV3IRSensor infraRedSensor, EV3TouchSensor touchSensor) {
-		this(motorRight, motorLeft, motorOfHead, null, null, infraRedSensor, null);
 	}
 
 	public AvoiderDieWerkt(RegulatedMotor motorRight, RegulatedMotor motorLeft, RegulatedMotor motorOfHead,
-			UnregulatedMotor motorOfGrip, EV3IRSensor infraRedSensor, EV3TouchSensor touchSensor) {
-		this(motorRight, motorLeft, motorOfHead, motorOfGrip, null, infraRedSensor, null);
-	}
-
-	public AvoiderDieWerkt(RegulatedMotor motorRight, RegulatedMotor motorLeft, RegulatedMotor motorOfHead,
-			ColorSensor colorSensor, EV3IRSensor infraRedSensor, EV3TouchSensor touchSensor) {
-		this(motorRight, motorLeft, motorOfHead, null, colorSensor, infraRedSensor, touchSensor);
+			UnregulatedMotor motorOfGrip, EV3IRSensor infraRedSensor) {
+		this(motorRight, motorLeft, motorOfHead, motorOfGrip, null, infraRedSensor);
 	}
 
 	public AvoiderDieWerkt() {
-		this(null, null, null, null, null, null, null);
+		this(null, null, null, null, null, null);
 	}
 
 	public void useObjectAvoider(RegulatedMotor motorRight, RegulatedMotor motorLeft, RegulatedMotor motorOfHead,
@@ -106,26 +90,30 @@ public class AvoiderDieWerkt {
 	 * 'head' of the robot is 'straight' (i.e. lined with the robot's moving
 	 * direction).
 	 */
-	public void run() {
-		lijstMetTachoMetingen.clear();
+	public void avoidOpponentsAndScoreGoalFollowedByReplay() {
+		// Start every run with an empty list of tacho measurements
+		listWithTachoMeasurements.clear();
+
+		// Flash green light and make sound when ready, then wait for press
+		Button.LEDPattern(4);
+		Sound.beepSequenceUp();
+		System.out.println("Initiating Follow Beacon!");
+		Button.waitForAnyPress();
+
+		// Call the three relevant submethods
 		startObjectAvoider();
-		for (Integer i : lijstMetTachoMetingen) {
-			System.out.println("eerste keer");
-			System.out.println(i);
-		}
 		scoreAGoal();
-		comeBack(lijstMetTachoMetingen);
+		comeBack(listWithTachoMeasurements);
+
+		// Close all resources
 		motorLeft.close();
 		motorRight.close();
 		motorOfHead.close();
 		infraRedSensor.close();
+		motorOfGrip.close();
 	}
 
 	public void startObjectAvoider() {
-		Sound.beepSequence();
-		System.out.println("Press a key to start the Object Avoider");
-		Button.waitForAnyPress();
-
 		int numberOfObjectsPassed = 0;
 		while (numberOfObjectsPassed < numberOfObjectsToBePassed && Button.ESCAPE.isUp()) {
 			// Let the robot drive calmly towards the object, until the object is nearer
@@ -134,13 +122,13 @@ public class AvoiderDieWerkt {
 
 			// Robot faces away from the object, after which the head turns towards it, so
 			// the distance to the object can still be measured
+			// Every next object will be passed on the other side than the previous object.
+			// Just for the fun of it, but also to make sure that the robot does not
+			// 'depart' too much by passing every object at the same side
 			if (numberOfObjectsPassed % 2 == 0) {
 				robotTurns90DegreesTo("L");
 				headTurns90DegreesTo("R");
 			}
-			// Every next object will be passed on the other side than the previous object.
-			// Just for the fun of it, but also to make sure that the robot does not
-			// 'depart' too much by passing every object at the same side
 			if (numberOfObjectsPassed % 2 == 1) {
 				robotTurns90DegreesTo("R");
 				headTurns90DegreesTo("L");
@@ -160,83 +148,122 @@ public class AvoiderDieWerkt {
 				robotTurns90DegreesTo("R");
 				headTurns90DegreesTo("L");
 			}
-			// Again, other way around for consecutively passed objects
 			if (numberOfObjectsPassed % 2 == 1) {
 				robotTurns90DegreesTo("L");
 				headTurns90DegreesTo("R");
 			}
+
 			numberOfObjectsPassed++;
-
 		}
-
 	}
 
 	public void playWithMarvin(long forHowLong) {
-		lijstMetTachoMetingen.clear();
-		motorLeft.setSpeed(600);
-		motorRight.setSpeed(600);
+		// Start every run with an empty list of tacho measurements
+		listWithTachoMeasurements.clear();
+
+		// Flash green light and make sound when ready, then wait for press
+		Button.LEDPattern(4);
+		Sound.beepSequenceUp();
+		System.out.println("Initiating Follow Beacon!");
+		Button.waitForAnyPress();
+
+		// The robot goes at relatively fast speed, i.e. not slow but not fast either
+		motorLeft.setSpeed(REASONABLE_SPEED);
+		motorRight.setSpeed(REASONABLE_SPEED);
+
+		// Determine the end time by the start time and the requested forHowLong-time
 		long startTime = System.currentTimeMillis();
 		long endTime = startTime + forHowLong;
 		while (System.currentTimeMillis() < endTime) {
 			keepCalmlyGoingForward(UP_TO_OBJECT);
-			// if (allTheTimeHasPassed(endTime)) {
-			// break;
-			// }
 			robotTurns90DegreesTo("L");
-			// headTurns90DegreesTo("R");
-			// keepCalmlyGoingForward(UNTIL_OBJECT_IS_PASSED);
-			// if (allTheTimeHasPassed(endTime)) {
-			// break;
-			// }
-			// robotTurns90DegreesTo("L");
-			// headTurns90DegreesTo("L");
 		}
+
+		// Robot makes some noises when the playing time (forHowLong) is over
 		Sound.beepSequence();
 		Sound.twoBeeps();
-		comeBackAfterPlaying(lijstMetTachoMetingen);
+
+		comeBackAfterPlaying(listWithTachoMeasurements);
+
+		// Close all resources
 		motorLeft.close();
 		motorRight.close();
 		motorOfHead.close();
 		infraRedSensor.close();
 	}
 
+	/**
+	 * Test whether a specified amount of time has passed
+	 * 
+	 * @param endTime
+	 *            The ending time of the period
+	 * @return True or false, indicating whether the time has passed or not
+	 */
 	public static boolean allTheTimeHasPassed(long endTime) {
 		return (System.currentTimeMillis() > endTime);
 	}
 
+	/**
+	 * Let the robot make a turn of 'exactly' 90 degrees.
+	 * 
+	 * @param direction
+	 *            Either right or left, identified by "L" resp. "R"
+	 */
 	public static void robotTurns90DegreesTo(String direction) {
-		int requiredMotorRotationFor90Degrees = 400; // negative for direction
+		// The required rotation for a 90 degrees turn is different for each robot
+		final int REQUIRED_ROTATION_FOR_90_DEGREES_TURN = 400;
 		if (direction.equals("L")) {
-			motorLeft.rotate(-requiredMotorRotationFor90Degrees, true);
-			motorRight.rotate(requiredMotorRotationFor90Degrees, true);
+			motorLeft.rotate(-REQUIRED_ROTATION_FOR_90_DEGREES_TURN, true);
+			motorRight.rotate(REQUIRED_ROTATION_FOR_90_DEGREES_TURN, true);
 			motorLeft.waitComplete();
 			motorRight.waitComplete();
 		}
 		if (direction.equals("R")) {
-			motorLeft.rotate(requiredMotorRotationFor90Degrees, true);
-			motorRight.rotate(-requiredMotorRotationFor90Degrees, true);
+			motorLeft.rotate(REQUIRED_ROTATION_FOR_90_DEGREES_TURN, true);
+			motorRight.rotate(-REQUIRED_ROTATION_FOR_90_DEGREES_TURN, true);
 			motorLeft.waitComplete();
 			motorRight.waitComplete();
 		}
 	}
 
+	/**
+	 * Let only the head of the robot make a turn of 'exactly' 90 degrees
+	 * 
+	 * @param direction
+	 *            Either right or left, identified by "L" resp. "R"
+	 */
 	public static void headTurns90DegreesTo(String direction) {
-		int motorRotationRequiredForHeadToMakeA90DegreesTurn = 65;
+		// The required rotation for a 90 degrees turn is different for each head of a
+		// robot
+		final int REQUIRED_ROTATION_OF_HEAD_FOR_90_DEGREES_TURN = 65;
 		if (direction.equals("L")) {
-			motorOfHead.rotate(motorRotationRequiredForHeadToMakeA90DegreesTurn, true);
+			motorOfHead.rotate(REQUIRED_ROTATION_OF_HEAD_FOR_90_DEGREES_TURN, true);
 			motorOfHead.waitComplete();
 		}
 		if (direction.equals("R")) {
-			motorOfHead.rotate(-motorRotationRequiredForHeadToMakeA90DegreesTurn, true);
+			motorOfHead.rotate(-REQUIRED_ROTATION_OF_HEAD_FOR_90_DEGREES_TURN, true);
 			motorOfHead.waitComplete();
 		}
 	}
+
+	/**
+	 * This method can be used for both heading to an object and stopping before the
+	 * SMALLEST_DISTANCE_TO_OBJECT has reached as well as for passing an object as
+	 * long as the robot is still within the SMALLEST_DISTANCE_TO_OBJECT
+	 * 
+	 * @param upToObjectOrUntilObjectIsPassed
+	 *            indicates which of the two options is used: heading to an object
+	 *            until it's reached or passing the object until it's passed
+	 */
 
 	private static void keepCalmlyGoingForward(int upToObjectOrUntilObjectIsPassed) {
 		if (upToObjectOrUntilObjectIsPassed == UP_TO_OBJECT) {
 			int measuredDistance = upToObjectOrUntilObjectIsPassed;
+			// Reset the tacho-meter for each motor
 			motorRight.resetTachoCount();
 			motorLeft.resetTachoCount();
+			// While the object is still far away enough (i.e. further than the
+			// SMALLEST_DISTANCE_TO_OBJECT), the robot keeps heading it
 			while (measuredDistance > SMALLEST_DISTANCE_TO_OBJECT) {
 				SensorMode distanceMeasurer = infraRedSensor.getDistanceMode();
 				float[] sample = new float[distanceMeasurer.sampleSize()];
@@ -246,14 +273,20 @@ public class AvoiderDieWerkt {
 				motorLeft.rotate(GO_CALMLY_FORWARD, true);
 				motorRight.rotate(GO_CALMLY_FORWARD, true);
 			}
-			lijstMetTachoMetingen.add(motorRight.getTachoCount());
-			lijstMetTachoMetingen.add(motorLeft.getTachoCount());
+			// Add the tacho-count to the array list, so it can be used later for the
+			// 'replay' of the movement of the robot
+			listWithTachoMeasurements.add(motorRight.getTachoCount());
+			listWithTachoMeasurements.add(motorLeft.getTachoCount());
 		}
 		if (upToObjectOrUntilObjectIsPassed == UNTIL_OBJECT_IS_PASSED) {
+			final int EXTRA_SPACE = 2;
 			int measuredDistance = upToObjectOrUntilObjectIsPassed;
 			motorRight.resetTachoCount();
 			motorLeft.resetTachoCount();
-			while (measuredDistance < 2 * SMALLEST_DISTANCE_TO_OBJECT) {
+			// Let the robot move further while the robot is still within its sight;
+			// To make sure there is no nearby second object (diagonally) behind the first
+			// one, the checking distance is multiplied with an extra space-factor
+			while (measuredDistance < EXTRA_SPACE * SMALLEST_DISTANCE_TO_OBJECT) {
 				SensorMode distanceMeasurer = infraRedSensor.getDistanceMode();
 				float[] sample = new float[distanceMeasurer.sampleSize()];
 				distanceMeasurer.fetchSample(sample, 0);
@@ -262,26 +295,49 @@ public class AvoiderDieWerkt {
 				motorLeft.rotate(GO_CALMLY_FORWARD, true);
 				motorRight.rotate(GO_CALMLY_FORWARD, true);
 			}
-			lijstMetTachoMetingen.add(motorRight.getTachoCount());
-			lijstMetTachoMetingen.add(motorLeft.getTachoCount());
+			// Add the tacho-count to the array list, so it can be used later for the
+			// 'replay' of the movement of the robot
+			listWithTachoMeasurements.add(motorRight.getTachoCount());
+			listWithTachoMeasurements.add(motorLeft.getTachoCount());
 		}
 	}
 
+	/**
+	 * Depending on the exact design of the robot, it will need extra space to pass.
+	 * This method facilitates this extra movement.
+	 */
 	private static void littleBitExtraForward() {
+		final int EXTRA_DISTANCE = 800;
+		// Reset the tacho-meter for each motor
 		motorRight.resetTachoCount();
 		motorLeft.resetTachoCount();
-		int extraDistance = 1000;
-		motorLeft.rotate(extraDistance, true);
-		motorRight.rotate(extraDistance, true);
+
+		motorLeft.rotate(EXTRA_DISTANCE, true);
+		motorRight.rotate(EXTRA_DISTANCE, true);
 		motorLeft.waitComplete();
 		motorRight.waitComplete();
-		lijstMetTachoMetingen.add(motorRight.getTachoCount());
-		lijstMetTachoMetingen.add(motorLeft.getTachoCount());
+
+		// Add the tacho-count to the array list, so it can be used later for the
+		// 'replay' of the movement of the robot
+		listWithTachoMeasurements.add(motorRight.getTachoCount());
+		listWithTachoMeasurements.add(motorLeft.getTachoCount());
 	}
 
+	/**
+	 * This method allows the client to choose how many objects his/her robot should
+	 * pass.
+	 * 
+	 * @param numberOfObjectsToBePassed
+	 *            The amount of objects to be passed by the robot
+	 */
 	public static void setNumberOfObjectsToBePassed(int numberOfObjectsToBePassed) {
 		AvoiderDieWerkt.numberOfObjectsToBePassed = numberOfObjectsToBePassed;
 	}
+
+	/**
+	 * 
+	 * @param lijstMetTachoMetingen
+	 */
 
 	private static void comeBack(ArrayList<Integer> lijstMetTachoMetingen) {
 		motorLeft.setSpeed(800);
@@ -308,10 +364,15 @@ public class AvoiderDieWerkt {
 		motorRight.waitComplete();
 	}
 
+	/**
+	 * This method calculates the
+	 * 
+	 * @param lijstMetTachoMetingen
+	 */
 	private static void comeBackAfterPlaying(ArrayList<Integer> lijstMetTachoMetingen) {
-		// one playing round is one complete 'circle' of moving to an object, driving
+		// One playing round is one complete 'circle' of moving to an object, driving
 		// past it and moving head
-		// moving to an object and driving past it, adds two times two measurements to
+		// Moving to an object and driving past it, adds two times two measurements to
 		// the list with measurements; hence, one complete round of playing equals four
 		// measurements
 		int numberOfPlayingRounds = lijstMetTachoMetingen.size() / 4;
@@ -333,9 +394,13 @@ public class AvoiderDieWerkt {
 		balletjeGrijper.useGrip(motorOfGrip);
 		balletjeGrijper.openGrip();
 		balletjeGrijper.closeGrip();
+		// motorLeft.rotate(800, true);
+		// motorRight.rotate(-800, true);
+		// motorLeft.waitComplete();
+		// motorRight.waitComplete();
 	}
 
-	public void walkThroughLabyrinth() {
+	public void walkThroughEasyLabyrinth() {
 		while (Button.ESCAPE.isUp()) {
 			keepCalmlyGoingForward(UP_TO_OBJECT);
 			robotTurns90DegreesTo("L");
@@ -344,11 +409,63 @@ public class AvoiderDieWerkt {
 			distanceMeasurer.fetchSample(sample, 0);
 			int measuredDistance = (int) sample[0];
 			if (measuredDistance < SMALLEST_DISTANCE_TO_OBJECT) {
-				motorLeft.rotate(-800, true);
-				motorRight.rotate(-800, true);
+				robotTurns90DegreesTo("L");
+				robotTurns90DegreesTo("L");
+			}
+
+		}
+	}
+
+	public void walkThroughRealLabyrinth() {
+		// Flash green light and make sound when ready, then wait for press
+		Button.LEDPattern(4);
+		Sound.beepSequenceUp();
+		System.out.println("Initiating Follow Beacon!");
+		Button.waitForAnyPress();
+		boolean klaar = false;
+		final int STEP = 400;
+		final int BIG_STEP = 660;
+		while (!klaar && Button.ESCAPE.isUp()) {
+			if (leftFree()) {
+				motorLeft.rotate(BIG_STEP, true);
+				motorRight.rotate(BIG_STEP, true);
 				motorLeft.waitComplete();
 				motorRight.waitComplete();
+				robotTurns90DegreesTo("L");
+				motorLeft.rotate(BIG_STEP, true);
+				motorRight.rotate(BIG_STEP, true);
+				motorLeft.waitComplete();
+				motorRight.waitComplete();
+			} else if (straightOnFree()) {
+				motorLeft.rotate(STEP, true);
+				motorRight.rotate(STEP, true);
+				motorLeft.waitComplete();
+				motorRight.waitComplete();
+			} else {
+				robotTurns90DegreesTo("R");
 			}
+
 		}
+		motorRight.close();
+		motorLeft.close();
+		
+	}
+
+	public boolean leftFree() {
+		headTurns90DegreesTo("L");
+		int measurement = getMeasurement();
+		headTurns90DegreesTo("R");
+		return (measurement > SMALLEST_DISTANCE_TO_OBJECT);
+	}
+
+	public boolean straightOnFree() {
+		return (getMeasurement() > SMALLEST_DISTANCE_TO_OBJECT * 0.7);
+	}
+
+	public int getMeasurement() {
+		SensorMode distanceMeasurer = infraRedSensor.getDistanceMode();
+		float[] sample = new float[distanceMeasurer.sampleSize()];
+		distanceMeasurer.fetchSample(sample, 0);
+		return (int) sample[0];
 	}
 }
