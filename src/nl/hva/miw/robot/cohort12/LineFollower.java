@@ -43,10 +43,10 @@ public class LineFollower {
 	// A higher kP implies that the robot will move faster to the border of the
 	// line. This will generally lower the duration of zigzagging, but also
 	// temporarily increase the extent of the zigzagging
-	private static int kP = 150; // 150
+	private static int kP = 100; // 100
 	// The robot moves faster at a higher power, but the risk of losing curves also
 	// increases
-	private static int steadyPower = 37; // 37
+	private static int steadyPower = 15; // 15
 	// If the robot keeps missing inner curves, then consider to increase (i.e. move
 	// closer to zero) the panic boundary. Another option is to lower the above
 	// mentioned steady power n n
@@ -77,10 +77,10 @@ public class LineFollower {
 	// straight lines and lower at curves.
 	private static boolean variableSpeed = true;
 	private static double lastColorValue = redColorOfBorder;
-	private static double colorValueVariableSpeedThreshold = 0.05; // test
+	private static double colorValueVariableSpeedThreshold = 0.03; // test
 	private static int minimumPower = 20;
 	private static int maximumPower = 90;
-	private static double speedChangeFraction = 0.3;
+	private static double speedChangeFraction = 0.015;
 
 	// The required variables for the line follower that determines at which border
 	// of the line the robot is starting
