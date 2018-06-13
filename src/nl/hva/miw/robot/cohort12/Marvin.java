@@ -19,8 +19,9 @@ public class Marvin {
 	private static RegulatedMotor motorOfHead = new EV3MediumRegulatedMotor(MotorPort.B);
 	private static UnregulatedMotor motorOfGrip = new UnregulatedMotor(MotorPort.A);
 	//private static ColorSensor colorSensor = new ColorSensor(SensorPort.S4);
-	private static EV3IRSensor infraRedSensor = new EV3IRSensor(SensorPort.S1);
+	private static EV3IRSensor infraredSensor = new EV3IRSensor(SensorPort.S1);
 	private static EV3TouchSensor touchSensor = new EV3TouchSensor(SensorPort.S2);
+	private static Mario newMario = new Mario();
 
 	// The constants below are for setting the right mode of a LineFollower
 	final static int MODE_ONOFF_FOLLOWER_RIGHT = 1;
@@ -45,13 +46,16 @@ public class Marvin {
 //		 colorSensor); 
 //		 ourLineFollower.followLine(MODE_ADJUSTED_P_CONTROLLER_RIGHT);
 
+//		FollowBeacon followBeacon = new FollowBeacon(motorRight, motorLeft, motorOfGrip, infraredSensor, newMario);
+//		followBeacon.run();
+
 		// ObjectAvoider ourObjectAvoider = new ObjectAvoider(motorRight, motorLeft,
 		// motorOfHead, motorOfGrip,
 		// infraRedSensor);
 		// ourObjectAvoider.startObjectAvoider(); 
 
 		AvoiderDieWerkt ourObjectAvoider = new AvoiderDieWerkt(motorRight, motorLeft, motorOfHead, motorOfGrip,
-				infraRedSensor, touchSensor);
+				infraredSensor, touchSensor);
 //		ourObjectAvoider.run();
 //		ourObjectAvoider.playWithMarvin(15000);
 		ourObjectAvoider.walkThroughLabyrinth();

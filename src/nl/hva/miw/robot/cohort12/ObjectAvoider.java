@@ -25,7 +25,7 @@ public class ObjectAvoider {
 	private static RegulatedMotor motorOfHead;
 	private static UnregulatedMotor motorOfGrip;
 	private static ColorSensor colorSensor;
-	private static EV3IRSensor infraRedSensor;
+	private static EV3IRSensor infraredSensor;
 	private static final int UP_TO_OBJECT = 1000;
 	private static final int UNTIL_OBJECT_IS_PASSED = 1;
 	// A value of 40 equals approximately 15 centimeter, though this might differ
@@ -60,7 +60,7 @@ public class ObjectAvoider {
 		ObjectAvoider.motorOfHead = motorOfHead;
 		ObjectAvoider.motorOfGrip = motorOfGrip;
 		ObjectAvoider.colorSensor = colorSensor;
-		ObjectAvoider.infraRedSensor = infraRedSensor;
+		ObjectAvoider.infraredSensor = infraRedSensor;
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class ObjectAvoider {
 		ObjectAvoider.motorOfHead = motorOfHead;
 		ObjectAvoider.motorOfGrip = motorOfGrip;
 		ObjectAvoider.colorSensor = colorSensor;
-		ObjectAvoider.infraRedSensor = infraRedSensor;
+		ObjectAvoider.infraredSensor = infraRedSensor;
 	}
 
 	/**
@@ -113,7 +113,7 @@ public class ObjectAvoider {
 		motorLeft.close();
 		motorRight.close();
 		motorOfHead.close();
-		infraRedSensor.close();
+		infraredSensor.close();
 	}
 
 	public void startObjectAvoider() {
@@ -201,7 +201,7 @@ public class ObjectAvoider {
 			motorRight.resetTachoCount();
 			motorLeft.resetTachoCount();
 			while (measuredDistance > SMALLEST_DISTANCE_TO_OBJECT) {
-				SensorMode distanceMeasurer = infraRedSensor.getDistanceMode();
+				SensorMode distanceMeasurer = infraredSensor.getDistanceMode();
 				float[] sample = new float[distanceMeasurer.sampleSize()];
 				distanceMeasurer.fetchSample(sample, 0);
 				measuredDistance = (int) sample[0];
@@ -217,7 +217,7 @@ public class ObjectAvoider {
 			motorRight.resetTachoCount();
 			motorLeft.resetTachoCount();
 			while (measuredDistance < 2 * SMALLEST_DISTANCE_TO_OBJECT) {
-				SensorMode distanceMeasurer = infraRedSensor.getDistanceMode();
+				SensorMode distanceMeasurer = infraredSensor.getDistanceMode();
 				float[] sample = new float[distanceMeasurer.sampleSize()];
 				distanceMeasurer.fetchSample(sample, 0);
 				measuredDistance = (int) sample[0];
