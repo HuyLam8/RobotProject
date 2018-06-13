@@ -25,7 +25,7 @@ public class AvoiderDieWerkt {
 	private static RegulatedMotor motorOfHead;
 	private static UnregulatedMotor motorOfGrip;
 	private static ColorSensor colorSensor;
-	private static EV3IRSensor infraRedSensor;
+	private static EV3IRSensor infraredSensor;
 	private static Grip balletjeGrijper = new Grip();
 	private static final int UP_TO_OBJECT = 1000;
 	private static final int UNTIL_OBJECT_IS_PASSED = 1;
@@ -62,7 +62,7 @@ public class AvoiderDieWerkt {
 		AvoiderDieWerkt.motorOfHead = motorOfHead;
 		AvoiderDieWerkt.motorOfGrip = motorOfGrip;
 		AvoiderDieWerkt.colorSensor = colorSensor;
-		AvoiderDieWerkt.infraRedSensor = infraRedSensor;
+		AvoiderDieWerkt.infraredSensor = infraRedSensor;
 	}
 
 	public AvoiderDieWerkt(RegulatedMotor motorRight, RegulatedMotor motorLeft, RegulatedMotor motorOfHead,
@@ -81,7 +81,7 @@ public class AvoiderDieWerkt {
 		AvoiderDieWerkt.motorOfHead = motorOfHead;
 		AvoiderDieWerkt.motorOfGrip = motorOfGrip;
 		AvoiderDieWerkt.colorSensor = colorSensor;
-		AvoiderDieWerkt.infraRedSensor = infraRedSensor;
+		AvoiderDieWerkt.infraredSensor = infraRedSensor;
 	}
 
 	/**
@@ -109,7 +109,7 @@ public class AvoiderDieWerkt {
 		motorLeft.close();
 		motorRight.close();
 		motorOfHead.close();
-		infraRedSensor.close();
+		infraredSensor.close();
 		motorOfGrip.close();
 	}
 
@@ -189,7 +189,7 @@ public class AvoiderDieWerkt {
 		motorLeft.close();
 		motorRight.close();
 		motorOfHead.close();
-		infraRedSensor.close();
+		infraredSensor.close();
 	}
 
 	/**
@@ -265,7 +265,7 @@ public class AvoiderDieWerkt {
 			// While the object is still far away enough (i.e. further than the
 			// SMALLEST_DISTANCE_TO_OBJECT), the robot keeps heading it
 			while (measuredDistance > SMALLEST_DISTANCE_TO_OBJECT) {
-				SensorMode distanceMeasurer = infraRedSensor.getDistanceMode();
+				SensorMode distanceMeasurer = infraredSensor.getDistanceMode();
 				float[] sample = new float[distanceMeasurer.sampleSize()];
 				distanceMeasurer.fetchSample(sample, 0);
 				measuredDistance = (int) sample[0];
@@ -287,7 +287,7 @@ public class AvoiderDieWerkt {
 			// To make sure there is no nearby second object (diagonally) behind the first
 			// one, the checking distance is multiplied with an extra space-factor
 			while (measuredDistance < EXTRA_SPACE * SMALLEST_DISTANCE_TO_OBJECT) {
-				SensorMode distanceMeasurer = infraRedSensor.getDistanceMode();
+				SensorMode distanceMeasurer = infraredSensor.getDistanceMode();
 				float[] sample = new float[distanceMeasurer.sampleSize()];
 				distanceMeasurer.fetchSample(sample, 0);
 				measuredDistance = (int) sample[0];
@@ -404,7 +404,7 @@ public class AvoiderDieWerkt {
 		while (Button.ESCAPE.isUp()) {
 			keepCalmlyGoingForward(UP_TO_OBJECT);
 			robotTurns90DegreesTo("L");
-			SensorMode distanceMeasurer = infraRedSensor.getDistanceMode();
+			SensorMode distanceMeasurer = infraredSensor.getDistanceMode();
 			float[] sample = new float[distanceMeasurer.sampleSize()];
 			distanceMeasurer.fetchSample(sample, 0);
 			int measuredDistance = (int) sample[0];
@@ -463,7 +463,7 @@ public class AvoiderDieWerkt {
 	}
 
 	public int getMeasurement() {
-		SensorMode distanceMeasurer = infraRedSensor.getDistanceMode();
+		SensorMode distanceMeasurer = infraredSensor.getDistanceMode();
 		float[] sample = new float[distanceMeasurer.sampleSize()];
 		distanceMeasurer.fetchSample(sample, 0);
 		return (int) sample[0];
