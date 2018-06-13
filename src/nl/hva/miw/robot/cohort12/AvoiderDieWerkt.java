@@ -28,10 +28,10 @@ public class AvoiderDieWerkt {
 	private static EV3IRSensor infraRedSensor;
 	private static Grip balletjeGrijper = new Grip();
 	private static final int UP_TO_OBJECT = 1000;
-	private static final int UNTIL_OBJECT_IS_PASSED = 2;
+	private static final int UNTIL_OBJECT_IS_PASSED = 1;
 	// The distance number translates differently to an actual distance (in
 	// centimetres or inches) for each sensor
-	private static final int SMALLEST_DISTANCE_TO_OBJECT = 55;
+	private static final int SMALLEST_DISTANCE_TO_OBJECT = 40; // 55
 	private static final int GO_CALMLY_FORWARD = 360;
 	private static final int REASONABLE_SPEED = 500;
 	private static int numberOfObjectsToBePassed = 2;
@@ -307,7 +307,7 @@ public class AvoiderDieWerkt {
 	 * This method facilitates this extra movement.
 	 */
 	private static void littleBitExtraForward() {
-		final int EXTRA_DISTANCE = 1000;
+		final int EXTRA_DISTANCE = 800;
 		// Reset the tacho-meter for each motor
 		motorRight.resetTachoCount();
 		motorLeft.resetTachoCount();
@@ -333,7 +333,7 @@ public class AvoiderDieWerkt {
 	public static void setNumberOfObjectsToBePassed(int numberOfObjectsToBePassed) {
 		AvoiderDieWerkt.numberOfObjectsToBePassed = numberOfObjectsToBePassed;
 	}
-	
+
 	/**
 	 * 
 	 * @param lijstMetTachoMetingen
@@ -363,9 +363,10 @@ public class AvoiderDieWerkt {
 		motorLeft.waitComplete();
 		motorRight.waitComplete();
 	}
-	
+
 	/**
-	 * This method calculates the 
+	 * This method calculates the
+	 * 
 	 * @param lijstMetTachoMetingen
 	 */
 	private static void comeBackAfterPlaying(ArrayList<Integer> lijstMetTachoMetingen) {
@@ -393,9 +394,13 @@ public class AvoiderDieWerkt {
 		balletjeGrijper.useGrip(motorOfGrip);
 		balletjeGrijper.openGrip();
 		balletjeGrijper.closeGrip();
+		// motorLeft.rotate(800, true);
+		// motorRight.rotate(-800, true);
+		// motorLeft.waitComplete();
+		// motorRight.waitComplete();
 	}
 
-	public void walkThroughLabyrinth() {
+	public void walkThroughEasyLabyrinth() {
 		while (Button.ESCAPE.isUp()) {
 			keepCalmlyGoingForward(UP_TO_OBJECT);
 			robotTurns90DegreesTo("L");
@@ -404,11 +409,63 @@ public class AvoiderDieWerkt {
 			distanceMeasurer.fetchSample(sample, 0);
 			int measuredDistance = (int) sample[0];
 			if (measuredDistance < SMALLEST_DISTANCE_TO_OBJECT) {
-				motorLeft.rotate(-800, true);
-				motorRight.rotate(-800, true);
+				robotTurns90DegreesTo("L");
+				robotTurns90DegreesTo("L");
+			}
+
+		}
+	}
+
+	public void walkThroughRealLabyrinth() {
+		// Flash green light and make sound when ready, then wait for press
+		Button.LEDPattern(4);
+		Sound.beepSequenceUp();
+		System.out.println("Initiating Follow Beacon!");
+		Button.waitForAnyPress();
+		boolean klaar = false;
+		final int STEP = 400;
+		final int BIG_STEP = 660;
+		while (!klaar && Button.ESCAPE.isUp()) {
+			if (leftFree()) {
+				motorLeft.rotate(BIG_STEP, true);
+				motorRight.rotate(BIG_STEP, true);
 				motorLeft.waitComplete();
 				motorRight.waitComplete();
+				robotTurns90DegreesTo("L");
+				motorLeft.rotate(BIG_STEP, true);
+				motorRight.rotate(BIG_STEP, true);
+				motorLeft.waitComplete();
+				motorRight.waitComplete();
+			} else if (straightOnFree()) {
+				motorLeft.rotate(STEP, true);
+				motorRight.rotate(STEP, true);
+				motorLeft.waitComplete();
+				motorRight.waitComplete();
+			} else {
+				robotTurns90DegreesTo("R");
 			}
+
 		}
+		motorRight.close();
+		motorLeft.close();
+		
+	}
+
+	public boolean leftFree() {
+		headTurns90DegreesTo("L");
+		int measurement = getMeasurement();
+		headTurns90DegreesTo("R");
+		return (measurement > SMALLEST_DISTANCE_TO_OBJECT);
+	}
+
+	public boolean straightOnFree() {
+		return (getMeasurement() > SMALLEST_DISTANCE_TO_OBJECT * 0.7);
+	}
+
+	public int getMeasurement() {
+		SensorMode distanceMeasurer = infraRedSensor.getDistanceMode();
+		float[] sample = new float[distanceMeasurer.sampleSize()];
+		distanceMeasurer.fetchSample(sample, 0);
+		return (int) sample[0];
 	}
 }
