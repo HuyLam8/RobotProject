@@ -55,9 +55,10 @@ public class Marvin {
 		// ourObjectAvoider.startObjectAvoider(); 
 
 		AvoiderDieWerkt ourObjectAvoider = new AvoiderDieWerkt(motorRight, motorLeft, motorOfHead, motorOfGrip,
-				infraredSensor, touchSensor);
+				infraredSensor);
 //		ourObjectAvoider.run();
 //		ourObjectAvoider.playWithMarvin(15000);
-		ourObjectAvoider.walkThroughLabyrinth();
+		ourObjectAvoider.walkThroughEasyLabyrinth();
+		ourObjectAvoider.walkThroughRealLabyrinth();
 	}
 }
