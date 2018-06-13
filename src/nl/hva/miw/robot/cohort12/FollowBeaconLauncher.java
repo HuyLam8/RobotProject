@@ -25,7 +25,7 @@ import lejos.utility.Delay;
 public class FollowBeaconLauncher {
 
 	private static final int ZERO = 0;
-	private static final int DEVIATION = -2;
+	private static final int DEVIATION = -3;
 	private static final int MIN_DISTANCE = 15;
 	private static final int MAX_DISTANCE = 100;
 
@@ -37,14 +37,16 @@ public class FollowBeaconLauncher {
 
 	// Thread headBeaconScanner = new Thread(new HeadBeaconScanner());
 
-	Grip newGrip = new Grip();
+	Grip newGrip = new Grip(claw);
 	int distance;
-
+	ControlDrive drive = new ControlDrive(right, left);
+	boolean klaar = false;
+	
 	SensorMode seekBeacon = infrared.getSeekMode();
 	float[] sample = new float[seekBeacon.sampleSize()];
 	// Brick brick;
-	// TextLCD display = brick.getTextLCD();
-	// SensorMode distance = infrared.getDistanceMode();
+//	 TextLCD display = brick.getTextLCD();
+//	 SensorMode distance = infrared.getDistanceMode();
 
 	public static void main(String[] args) {
 		System.out.println("Infrared Sensor\n");
@@ -60,9 +62,8 @@ public class FollowBeaconLauncher {
 	}
 
 	public void seekBeacon() {
-		Mario newMario = new Mario();
-		newMario.start();
-		while (Button.ESCAPE.isUp() || (distance > MIN_DISTANCE && distance < MAX_DISTANCE)) {
+
+		while (!klaar) {
 			// reads bearing and distance every second
 			seekBeacon.fetchSample(sample, 0);
 			// one pair has 2 elements, in this case: bearing and distance
@@ -71,85 +72,38 @@ public class FollowBeaconLauncher {
 			int distance = (int) sample[1];
 			System.out.println("Distance: " + distance);
 
-			// if beacon too far it will drive forward
+			// TOO FAR AWAY
 			if (direction == 0 && distance >= 100) {
 				left.setPower(40);
 				right.setPower(40);
 				Delay.msDelay(1000);
-				// head.rotateTo(-45);
-				// head.rotateTo(90);
-				// headBeaconScanner.start();
-
-				// for (int i = 0; direction == 0 && distance >= 100; i++) {
-				// head.rotateTo(i + 10);
-				// seekBeacon.fetchSample(sample, 0);
-				// direction = (int) sample[0];
-				// System.out.println("Direction: " + direction);
-				// distance = (int) sample[1];
-				// System.out.println("Distance: " + distance);
-				// }
-
-				// gear will turn backward and head will turn to the right
-			} else if (direction > DEVIATION) {
-				// headBeaconScanner.interrupt();
-
-				int speed = (direction - DEVIATION) * 10;
-				System.out.println("Speed: " + speed);
-//				head.setSpeed(speed);
-//				head.backward();
-//				Delay.msDelay(500);
-				// move to the right
-				left.setPower(40);
-				right.setPower(-10);
-				Delay.msDelay(200);
-
-				// gear will turn forward and head will turn to the left
-			} else if (direction < DEVIATION) {
-				// headBeaconScanner.interrupt();
-
-				int speed = (direction - DEVIATION) * 10;
-				System.out.println("Speed: " + speed);
-//				head.setSpeed(speed);
-//				head.forward();
-//				Delay.msDelay(500);
-				// move to the left
-				left.setPower(-10);
-				right.setPower(40);
-				Delay.msDelay(200);
-
-				// after checking direction sample value for the conditions continue to check
-				// conditions for distance sample value
-				// if not found keep on going forward until found
-				// if found stop and initiate claw motor to pick up object
-				// closest distance value is 1
-				// if beacon is right in front of IR sensor, stop turning head and drive forward
-			} else if (direction >= -6 && direction <= 0) {
-				// headBeaconScanner.interrupt();
-//				head.stop();
-				left.setPower(40);
-				right.setPower(40);
-				Delay.msDelay(200);
-				// if (direction > DEVIATION) {
-				// left.setPower(80);
-				// right.setPower(-10);
-				// Delay.msDelay(500);
-				// } else if (direction > DEVIATION){
-				// left.setPower(-10);
-				// right.setPower(80);
-				// Delay.msDelay(500);
-				// }
-				if (distance > ZERO && distance <= MIN_DISTANCE) {
-					Sound.setVolume(0);
-					left.stop();
-					right.stop();
-					Sound.beepSequenceUp();
-					System.out.println("I have found my beacon!");
-					newGrip.closeGrip(claw);
-					newGrip.openGrip(claw);
-					// call stopRunning() method whenever you want to stop a thread
-					newMario.setTimes(0);
-					newMario.stopRunning();
-					break;
+			} 
+			
+			else {
+				int goalSpeed = 30;
+				double kP = 1.5;
+				int error = direction - DEVIATION;
+				int powerRight = (int) (goalSpeed + kP * error);
+				int powerLeft = (int)(goalSpeed - kP * error);
+				right.setPower(powerLeft);
+				left.setPower(powerRight);
+				if (direction > (DEVIATION -2) && direction < DEVIATION + 2) {
+					Sound.setVolume(20);
+					Sound.beep();
+					
+					if (distance > 0 && distance < MIN_DISTANCE) {
+						drive.setPower(0, 0);
+						Sound.setVolume(20);
+						Sound.beepSequenceUp();
+						System.out.println("I have found my beacon!");
+						newGrip.closeGrip();
+						drive.setPower(-100, 100);
+						Delay.msDelay(1600);
+						drive.stop();
+						newGrip.openGrip();
+						klaar = true;
+					}
+						
 				}
 			}
 		}
@@ -158,7 +112,7 @@ public class FollowBeaconLauncher {
 		left.close();
 		right.close();
 		infrared.close();
-//		head.close();
+		head.close();
 		claw.close();
 	}
 }
