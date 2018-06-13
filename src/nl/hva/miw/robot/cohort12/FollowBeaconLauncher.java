@@ -18,7 +18,7 @@ import lejos.utility.Delay;
  * detect the beacon bearing and distance using the IR sensor in combination
  * with the beacon signal. Based on the values fetched the robot will turn and
  * drive towards the beacon and eventually, when in close range, stop in front
- * of the beacon.
+ * of the beacon and close the claw to pick up the object.
  * 
  * @author Huy
  *
@@ -39,8 +39,7 @@ public class FollowBeaconLauncher {
 	Mario newMario = new Mario();
 	Grip newGrip = new Grip(claw);
 	int distance;
-	//ControlDrive drive = new ControlDrive(right, left);
-	boolean klaar = false;
+	boolean ready = false; // 
 	
 	SensorMode seekBeacon = infrared.getSeekMode();
 	float[] sample = new float[seekBeacon.sampleSize()];
@@ -61,7 +60,7 @@ public class FollowBeaconLauncher {
 	public void seekBeacon() {
 		newMario.start();
 		
-		while (!klaar) {
+		while (!ready) {
 			// reads bearing and distance every second
 			seekBeacon.fetchSample(sample, 0);
 			// one pair has 2 elements, in this case: bearing and distance
@@ -110,7 +109,7 @@ public class FollowBeaconLauncher {
 //						Delay.msDelay(1600);
 //						drive.stop();
 						newGrip.openGrip();
-						klaar = true;
+						ready = true;
 					}
 						
 				}
