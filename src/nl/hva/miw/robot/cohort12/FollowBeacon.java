@@ -92,7 +92,7 @@ public class FollowBeacon {
 		Button.waitForAnyPress(); // wait for the user to press any button
 		
 		// start playing the Super Mario tune/theme song
-//		newMario.start();
+		newMario.start();
 
 		while (!ready) {
 			// reads bearing (direction) and distance every second
@@ -133,8 +133,8 @@ public class FollowBeacon {
 				if ((bearing > MAX_BEARING_LEFT && bearing < MAX_BEARING_RIGHT)
 						&& (distance > ZERO && distance <= MIN_DISTANCE)) {
 					// drive forward for a short distance
-					motorRight.rotate(800, true);
-					motorLeft.rotate(800, true);
+					motorRight.rotate(1000, true);
+					motorLeft.rotate(1000, true);
 					Delay.msDelay(2000);
 					motorLeft.stop();
 					motorRight.stop();
@@ -150,11 +150,29 @@ public class FollowBeacon {
 
 					// close the grip to pick up an object
 					newGrip.closeGrip();
+					
+					// turn the robot around
+					motorRight.setSpeed(700);
+					motorLeft.setSpeed(700);
+					motorRight.rotate(-1000, true);
+					motorLeft.rotate(1000, true);
+					motorRight.waitComplete();
+					motorLeft.waitComplete();
+					
+					// go forward for a short distance while carrying the beacon
+					motorRight.setSpeed(700);
+					motorLeft.setSpeed(700);
+					motorRight.rotate(2000, true);
+					motorLeft.rotate(2000, true);
+					motorRight.waitComplete();
+					motorLeft.waitComplete();			
+					motorRight.stop();
+					motorLeft.stop();
+					
+					// the robot will stop and open up the claw to drop the beacon
 					newGrip.openGrip();
-//					motorOfGrip.backward();
-//					motorOfGrip.setPower(SPEED_OF_OPENING_AND_CLOSING);
-//					Delay.msDelay(REQUIRED_TIME_OF_OPENING_AND_CLOSING);
-					// the robot is now ready so ready = true
+					
+					// the robot is now ready, so ready = true
 					ready = true;
 				}
 			}
