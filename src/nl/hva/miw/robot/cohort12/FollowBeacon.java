@@ -2,11 +2,7 @@ package nl.hva.miw.robot.cohort12;
 
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
-import lejos.hardware.motor.EV3LargeRegulatedMotor;
-import lejos.hardware.motor.EV3MediumRegulatedMotor;
 import lejos.hardware.motor.UnregulatedMotor;
-import lejos.hardware.port.MotorPort;
-import lejos.hardware.port.SensorPort;
 import lejos.hardware.sensor.EV3IRSensor;
 import lejos.hardware.sensor.SensorMode;
 import lejos.robotics.RegulatedMotor;
@@ -43,23 +39,25 @@ public class FollowBeacon {
 										// the beacon once it has been found
 	private static final int GOAL_SPEED = 150; // the speed that you want to achieve with the robot
 
-	private static final int SPEED_OF_OPENING_AND_CLOSING = 40; // speed of opening and closing the grip of the robot
-	private static final int REQUIRED_TIME_OF_OPENING_AND_CLOSING = 3000; // delay time for the process of closing and
-																			// opening the grip
+//	private static final int SPEED_OF_OPENING_AND_CLOSING = 40; // speed of opening and closing the grip of the robot
+//	private static final int REQUIRED_TIME_OF_OPENING_AND_CLOSING = 3000; // delay time for the process of closing and
+//																			// opening the grip
 
 	private static RegulatedMotor motorRight;
 	private static RegulatedMotor motorLeft;
 	private static UnregulatedMotor motorOfGrip;
+	private static Grip newGrip;
 	private static EV3IRSensor infraredSensor;
 	private static Mario newMario;
 
 	// constructor for the FollowBeacon object
-	public FollowBeacon(RegulatedMotor motorRight, RegulatedMotor motorLeft, UnregulatedMotor motorOfGrip,
+	public FollowBeacon(RegulatedMotor motorRight, RegulatedMotor motorLeft, UnregulatedMotor motorOfGrip, Grip newGrip,
 			EV3IRSensor infraRedSensor, Mario newMario) {
 		super();
 		FollowBeacon.motorRight = motorRight;
 		FollowBeacon.motorLeft = motorLeft;
 		FollowBeacon.motorOfGrip = motorOfGrip;
+		FollowBeacon.newGrip = newGrip;
 		FollowBeacon.infraredSensor = infraRedSensor;
 		FollowBeacon.newMario = newMario;
 
@@ -85,9 +83,6 @@ public class FollowBeacon {
 		// not true
 		boolean ready = false;
 
-		// start playing the Super Mario tune/theme song
-		newMario.start();
-
 		System.out.println("Infrared Sensor\n");
 
 		Button.LEDPattern(4); // flash green led and
@@ -95,6 +90,9 @@ public class FollowBeacon {
 
 		System.out.println("Initiating Follow Beacon!");
 		Button.waitForAnyPress(); // wait for the user to press any button
+		
+		// start playing the Super Mario tune/theme song
+//		newMario.start();
 
 		while (!ready) {
 			// reads bearing (direction) and distance every second
@@ -151,9 +149,19 @@ public class FollowBeacon {
 					System.out.println("I have found my beacon!");
 
 					// close the grip to pick up an object
-					motorOfGrip.backward();
-					motorOfGrip.setPower(SPEED_OF_OPENING_AND_CLOSING);
-					Delay.msDelay(REQUIRED_TIME_OF_OPENING_AND_CLOSING);
+					newGrip.closeGrip();
+					motorRight.rotate(-1000, true);
+					motorLeft.rotate(1000, true);
+					motorRight.waitComplete();
+					motorLeft.waitComplete();
+					motorRight.rotate(800, true);
+					motorLeft.rotate(800, true);
+					newGrip.openGrip();
+					motorRight.stop();
+					motorLeft.stop();
+//					motorOfGrip.backward();
+//					motorOfGrip.setPower(SPEED_OF_OPENING_AND_CLOSING);
+//					Delay.msDelay(REQUIRED_TIME_OF_OPENING_AND_CLOSING);
 					// the robot is now ready so ready = true
 					ready = true;
 				}
