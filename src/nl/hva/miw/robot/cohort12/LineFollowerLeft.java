@@ -37,6 +37,6 @@ public class LineFollowerLeft {
 
 		 LineFollower ourLineFollower = new LineFollower(motorRight, motorLeft,
 		 colorSensor); 
-		 ourLineFollower.followLine(MODE_ONOFF_FOLLOWER_RIGHT);
+		 ourLineFollower.followLine(MODE_ONOFF_FOLLOWER_LEFT);
 	}
 }
