@@ -17,21 +17,27 @@ public class ControlDrive {
 	 * Instantiate a new ControlDrive.
 	 */
 	public ControlDrive() {
-		this(null, null);
+		this(null, null, null);
 	}
 
 	/**
 	 * Instantiate a new ControlDrive.
 	 * 
-	 * @param motorRight
+	 * @param motor1
 	 *            The motor at the right of the robot.
-	 * @param motorLeft
+	 * @param motor2
 	 *            The motor at the left of the robot.
 	 */
-	public ControlDrive(UnregulatedMotor motorRight, UnregulatedMotor motorLeft) {
+	public ControlDrive(UnregulatedMotor motor1, UnregulatedMotor motor2, String leftOrRight) {
 		super();
-		ControlDrive.motorRight = motorRight;
-		ControlDrive.motorLeft = motorLeft;
+		if (leftOrRight.equals("R")) {
+			ControlDrive.motorRight = motor1;
+			ControlDrive.motorLeft = motor2;
+		}
+		if (leftOrRight.equals("L")) {
+			ControlDrive.motorLeft = motor1;
+			ControlDrive.motorRight = motor2;
+		}
 	}
 
 	/**
@@ -42,9 +48,15 @@ public class ControlDrive {
 	 * @param motorLeft
 	 *            The motor at the left of the robot.
 	 */
-	public void useControlDrive(UnregulatedMotor motorRight, UnregulatedMotor motorLeft) {
-		ControlDrive.motorRight = motorRight;
-		ControlDrive.motorLeft = motorLeft;
+	public void useControlDrive(UnregulatedMotor motor1, UnregulatedMotor motor2, String leftOrRight) {
+		if (leftOrRight.equals("R")) {
+			ControlDrive.motorRight = motor1;
+			ControlDrive.motorLeft = motor2;
+		}
+		if (leftOrRight.equals("L")) {
+			ControlDrive.motorLeft = motor1;
+			ControlDrive.motorRight = motor2;
+		}
 	}
 
 	/**
@@ -52,15 +64,15 @@ public class ControlDrive {
 	 * motor compared to the left motor to make the robot move to the left (vice
 	 * versa).
 	 * 
-	 * @param rightPower
+	 * @param power1
 	 *            Power of the motor on the right of the robot.
-	 * @param leftPower
+	 * @param power2
 	 *            Power of the motor on the right of the robot.
 	 */
 
-	public void setPower(int rightPower, int leftPower) {
-		ControlDrive.motorRight.setPower(rightPower);
-		ControlDrive.motorLeft.setPower(leftPower);
+	public void setPower(int power1, int power2) {
+		ControlDrive.motorRight.setPower(power1);
+		ControlDrive.motorLeft.setPower(power2);
 	}
 
 	public void stop() {

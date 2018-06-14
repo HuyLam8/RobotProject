@@ -21,7 +21,10 @@ import lejos.hardware.motor.*;
 
 public class LineFollower {
 	private static ColorSensor colorSensor;
-	private static ControlDrive drive;
+	private static UnregulatedMotor motorLeft;
+	private static UnregulatedMotor motorRight;
+	private static ControlDrive driveRightOfLine;
+	private static ControlDrive driveLeftOfLine;
 
 	// The measured color values of black, white and the border. This class
 	// encompasses a 'calibrate'-method to adjust these figures.
@@ -36,6 +39,7 @@ public class LineFollower {
 	// InnerMotor = left motor
 	// If robot is placed at the left border, then OuterMoter = left motor,
 	// InnerMotor = right motor
+	boolean normalMode = true;
 	private static int onOffPowerOuterMotor = 60;
 	private static int onOffPowerInnerMotor = -15;
 
@@ -43,14 +47,14 @@ public class LineFollower {
 	// A higher kP implies that the robot will move faster to the border of the
 	// line. This will generally lower the duration of zigzagging, but also
 	// temporarily increase the extent of the zigzagging
-	private static int kP = 100; // 100
+	private static int kP = 100;
 	// The robot moves faster at a higher power, but the risk of losing curves also
 	// increases
-	private static int steadyPower = 15; // 15
+	private static int steadyPower = 15;
 	// If the robot keeps missing inner curves, then consider to increase (i.e. move
 	// closer to zero) the panic boundary. Another option is to lower the above
 	// mentioned steady power n n
-	static boolean panicMode = true;
+	static boolean panicMode = false;
 	private static double panicBoundary = -0.20;
 	private static int panicKpInner = 1000;
 	private static int panicSteadyPowerInner = 250;
@@ -77,10 +81,10 @@ public class LineFollower {
 	// straight lines and lower at curves.
 	private static boolean variableSpeed = true;
 	private static double lastColorValue = redColorOfBorder;
-	private static double colorValueVariableSpeedThreshold = 0.03; // test
-	private static int minimumPower = 20;
-	private static int maximumPower = 90;
-	private static double speedChangeFraction = 0.015;
+	private final static double colorValueVariableSpeedThreshold = 0.03; // test
+	private final static int minimumPower = 20;
+	private final static int maximumPower = 90;
+	private final static double speedChangeFraction = 0.015;
 
 	// The required variables for the line follower that determines at which border
 	// of the line the robot is starting
@@ -90,7 +94,8 @@ public class LineFollower {
 	public LineFollower(UnregulatedMotor motorRight, UnregulatedMotor motorLeft, ColorSensor colorSensor) {
 		super();
 		LineFollower.colorSensor = colorSensor;
-		LineFollower.drive = new ControlDrive(motorRight, motorLeft);
+		LineFollower.motorLeft = motorLeft;
+		LineFollower.motorRight = motorRight;
 	}
 
 	/**
@@ -101,26 +106,30 @@ public class LineFollower {
 	 */
 
 	public void followLine(int mode) {
+		driveRightOfLine = new ControlDrive(motorRight, motorLeft, "R");
+		driveLeftOfLine = new ControlDrive(motorRight, motorLeft, "L");
 		System.out.println("Line Follower\n");
-		// Flashes green lights and makes sound when ready
+		// Flashes green lights and makes sound when ready, then waits for press on
+		// button to start
 		Button.LEDPattern(4);
 		Sound.beepSequenceUp();
 		System.out.println("Press any key to start the Line Follower");
 		Button.waitForAnyPress();
-		drive.goForward();
+		driveRightOfLine.goForward();
+		driveLeftOfLine.goForward();
 
 		switch (mode) {
 		case 1:
-			OnOffRight();
+			onOff("R");
 			break;
 		case 2:
-			OnOffLeft();
+			onOff("L");
 			break;
 		case 3:
-			adjustablePControllerRight();
+			adjustablePController("R");
 			break;
 		case 4:
-			adjustablePControllerLeft();
+			adjustablePController("L");
 			break;
 		case 5:
 			startFromUnknowBorder();
@@ -135,28 +144,50 @@ public class LineFollower {
 	 * the border.
 	 */
 
-	private void OnOffRight() {
+	private void onOff(String leftOrRight) {
 		while (Button.ESCAPE.isUp()) {
 			float colorValue = colorSensor.getRed();
 			double tooWhite = colorValue - redColorOfBorder;
-			System.out.println("color: " + colorValue);
-			if (tooWhite > 0) {
-				drive.setPower(onOffPowerOuterMotor, onOffPowerInnerMotor);
-			} else {
-				drive.setPower(onOffPowerInnerMotor, onOffPowerOuterMotor);
+			System.out.print("color: " + colorValue);
+			// If there is a risk of losing the 'inner curve' of a bend, then a 'panic mode'
+			// might apply in which case the robot will make a sharp turn (or even turn
+			// around its own axis if the power values are set at -100 and 100)
+			if (panicMode == true) {
+				if (tooWhite < panicBoundary) {
+					if (leftOrRight.equals("R")) {
+						driveRightOfLine.setPower(-panicPower, panicPower);
+						System.out.println("P_r: " + -panicPower + "P_L " +  panicPower);
+					} else if (leftOrRight.equals("L")) {
+						driveLeftOfLine.setPower(-panicPower, panicPower);
+						System.out.println("P_r: " + -panicPower + "P_L " +  panicPower);
+					}
+					// If the panicMode is used and the panicBounderay is met, then make sure the
+					// normalMode will not change the power settings
+					normalMode = false;
+				} else
+					// If the panicMode is turned on, but the panicBoundary is not met, then simply
+					// use the normalMode
+					normalMode = true;
 			}
-		}
-	}
 
-	private void OnOffLeft() {
-		while (Button.ESCAPE.isUp()) {
-			float colorValue = colorSensor.getRed();
-			double tooWhite = colorValue - redColorOfBorder;
-			System.out.println("color: " + colorValue);
-			if (tooWhite > 0) {
-				drive.setPower(onOffPowerInnerMotor, onOffPowerOuterMotor);
-			} else {
-				drive.setPower(onOffPowerOuterMotor, onOffPowerInnerMotor);
+			if (normalMode == true) {
+				if (tooWhite > 0) {
+					if (leftOrRight.equals("R")) {
+						driveRightOfLine.setPower(onOffPowerOuterMotor, onOffPowerInnerMotor);
+						System.out.println("P_r: " + onOffPowerOuterMotor + "P_L " +  onOffPowerInnerMotor);
+					} else if (leftOrRight.equals("L")) {
+						driveLeftOfLine.setPower(onOffPowerOuterMotor, onOffPowerInnerMotor);
+						System.out.println("P_r: " + onOffPowerOuterMotor + "P_L " +  onOffPowerInnerMotor);
+					}
+				} else {
+					if (leftOrRight.equals("R")) {
+						driveRightOfLine.setPower(onOffPowerInnerMotor, onOffPowerOuterMotor);
+						System.out.println("P_r: " +onOffPowerOuterMotor + "P_L " +  onOffPowerInnerMotor);
+					} else if (leftOrRight.equals("L")) {
+						driveLeftOfLine.setPower(onOffPowerInnerMotor, onOffPowerOuterMotor);
+						System.out.println("P_r: " + onOffPowerOuterMotor + "P_L " +  onOffPowerInnerMotor);
+					}
+				}
 			}
 		}
 	}
@@ -182,7 +213,7 @@ public class LineFollower {
 	 * This adjusted P-controller can easily be turned into a standard P-controller
 	 * by setting all the booleans (panicMode, speeder, dashedLines) at false.
 	 */
-	private void adjustablePControllerRight() {
+	private void adjustablePController(String leftOrRight) {
 		while (Button.ESCAPE.isUp()) {
 			int rightPower;
 			int leftPower;
@@ -192,13 +223,20 @@ public class LineFollower {
 			// applies
 			if (panicMode == true) {
 				if (tooWhite < panicBoundary) {
-					// rightPower = Math.max(-100, Math.min(100, (int) (panicSteadyPowerInner +
-					// panicKpInner * tooWhite)));
-					// leftPower = Math.max(-100, Math.min(100, (int) (panicSteadyPowerOuter -
-					// panicKpOuter * tooWhite)));
-					rightPower = -panicPower;
-					leftPower = panicPower;
-					drive.setPower(rightPower, leftPower);
+					rightPower = Math.max(-100, Math.min(100, (int) (panicSteadyPowerInner + panicKpInner * tooWhite)));
+					leftPower = Math.max(-100, Math.min(100, (int) (panicSteadyPowerOuter - panicKpOuter * tooWhite)));
+					if (leftOrRight.equals("R")) {
+						driveRightOfLine.setPower(rightPower, leftPower);
+					} else if (leftOrRight.equals("L")) {
+						driveLeftOfLine.setPower(rightPower, leftPower);
+					}
+					// If the panicMode is used and the panicBounderay is met, then make sure the
+					// normalMode will not change the power settings
+					normalMode = false;
+				} else {
+					// If the panicMode is turned on, but the panicBoundary is not met, then simply
+					// use the normalMode
+					normalMode = true;
 				}
 			}
 			// If the robot is driving over a more or less straight line, then the speed
@@ -208,12 +246,20 @@ public class LineFollower {
 					if (tooWhite >= -speedUpBoundary && tooWhite <= 0) {
 						rightPower = Math.max(-100, (Math.min(100, (int) (speedPower + speedKp1 * tooWhite))));
 						leftPower = Math.max(-100, (Math.min(100, (int) (speedPower + speedKp2 * tooWhite))));
-						drive.setPower(rightPower, leftPower);
+						if (leftOrRight.equals("R")) {
+							driveRightOfLine.setPower(rightPower, leftPower);
+						} else if (leftOrRight.equals("L")) {
+							driveLeftOfLine.setPower(rightPower, leftPower);
+						}
 					}
 					if (tooWhite <= speedUpBoundary && tooWhite > 0) {
 						rightPower = Math.max(-100, (Math.min(100, (int) (speedPower - speedKp2 * tooWhite))));
 						leftPower = Math.max(-100, (Math.min(100, (int) (speedPower - speedKp1 * tooWhite))));
-						drive.setPower(rightPower, leftPower);
+						if (leftOrRight.equals("R")) {
+							driveRightOfLine.setPower(rightPower, leftPower);
+						} else if (leftOrRight.equals("L")) {
+							driveLeftOfLine.setPower(rightPower, leftPower);
+						}
 					}
 				}
 			}
@@ -234,18 +280,35 @@ public class LineFollower {
 				if (tooWhite > dashedLineHelperBoundary) {
 					rightPower = panicPower;
 					leftPower = -panicPower;
-					drive.setPower(rightPower, leftPower);
-				}
-				//
-				else if (tooWhite > dashedLineBoundary) {
+					if (leftOrRight.equals("R")) {
+						driveRightOfLine.setPower(rightPower, leftPower);
+					} else if (leftOrRight.equals("L")) {
+						driveLeftOfLine.setPower(rightPower, leftPower);
+					}
+					// If this mode is used and the boundary is met, then make sure the
+					// normalMode will not change the power settings
+					normalMode = false;
+				} else if (tooWhite > dashedLineBoundary) {
 					rightPower = dashedLinePowerOuterMotor;
 					leftPower = dashedLinePowerInnerMotor;
-					drive.setPower(rightPower, leftPower);
+					if (leftOrRight.equals("R")) {
+						driveRightOfLine.setPower(rightPower, leftPower);
+					} else if (leftOrRight.equals("L")) {
+						driveLeftOfLine.setPower(rightPower, leftPower);
+					}
+					// If this mode is used and the boundary is met, then make sure the
+					// normalMode will not change the power settings
+					normalMode = false;
+				} else {
+					// If this mode is turned on, but the boundary is not met, then simply
+					// use the normalMode
+					normalMode = true;
 				}
 			}
 
-			// This is the basic P-controller with a possibility to adapt the speed to the
-			// amount of change in the speed
+			// This is the basic P-controller with a possibility to let the speed increase
+			// at every move, until the error is bigger than the
+			// colorValueVariableSpeedThreshold
 			else {
 				if (variableSpeed == true) {
 					steadyPower = (int) ((1 - speedChangeFraction) * steadyPower + speedChangeFraction * maximumPower);
@@ -257,12 +320,13 @@ public class LineFollower {
 				// This is the basic P-controller
 				rightPower = Math.max(-100, Math.min(100, (int) (steadyPower + kP * tooWhite)));
 				leftPower = Math.max(-100, Math.min(100, (int) (steadyPower - kP * tooWhite)));
-				drive.setPower(rightPower, leftPower);
+				if (leftOrRight.equals("R")) {
+					driveRightOfLine.setPower(rightPower, leftPower);
+				} else if (leftOrRight.equals("L")) {
+					driveLeftOfLine.setPower(rightPower, leftPower);
+				}
 			}
 		}
-	}
-
-	private void adjustablePControllerLeft() {
 	}
 
 	/**
@@ -296,7 +360,7 @@ public class LineFollower {
 			// to the line. To do so, it is forced to move to the left and collect the
 			// required data.
 			if (aantalMetingen <= 14) {
-				drive.setPower(testTurnRightMotor, testTurnLeftMotor);
+				driveRightOfLine.setPower(testTurnRightMotor, testTurnLeftMotor);
 				if (aantalMetingen == 1) {
 					meting1 = colorValue;
 				}
@@ -313,10 +377,10 @@ public class LineFollower {
 
 				if (meting13 > meting1) {
 					System.out.println("Start was at left border");
-					this.adjustablePControllerLeft();
+					this.adjustablePController("L");
 				} else {
 					System.out.println("Start was at right border");
-					this.adjustablePControllerRight();
+					this.adjustablePController("R");
 				}
 			}
 		}
