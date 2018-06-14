@@ -1,3 +1,31 @@
+// deze versie is alleen voor de presentatie; zie de master-branch voor het final bestand (met nette code etc.)
+
+//
+
+//
+
+//
+
+//
+
+//
+
+// deze versie is alleen voor de presentatie; zie de master-branch voor het final bestand (met nette code etc.)
+
+//
+
+//
+
+//
+
+//
+
+
+//
+
+
+// deze versie is alleen voor de presentatie; zie de master-branch voor het final bestand (met nette code etc.)
+
 package nl.hva.miw.robot.cohort12;
 
 import lejos.hardware.Button;
