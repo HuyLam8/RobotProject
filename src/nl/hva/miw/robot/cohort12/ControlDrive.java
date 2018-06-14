@@ -3,7 +3,8 @@ package nl.hva.miw.robot.cohort12;
 import lejos.hardware.motor.UnregulatedMotor;
 
 /**
- * This class can be used to control the direction and speed of a robot.
+ * This class can be used to control the direction of a robot. The class
+ * encompasses methods for different speeds and directions of the robot.
  * 
  * @author Bjorn Goos
  *
@@ -53,9 +54,9 @@ public class ControlDrive {
 	 * versa).
 	 * 
 	 * @param rightPower
-	 *            Power of the motor on the right of the robot.
+	 *            Power of the motor on the right of the robot
 	 * @param leftPower
-	 *            Power of the motor on the right of the robot.
+	 *            Power of the motor on the right of the robot
 	 */
 
 	public void setPower(int rightPower, int leftPower) {
