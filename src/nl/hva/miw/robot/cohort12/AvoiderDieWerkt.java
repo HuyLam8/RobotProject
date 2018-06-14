@@ -51,23 +51,23 @@ public class AvoiderDieWerkt {
 	 *            The motor that makes the grip open and close
 	 * @param colorSensor
 	 *            The sensor that measures color values
-	 * @param infraRedSensor
+	 * @param infraredSensor
 	 *            The sensor that measures distances (and 'angles' for the Beacon)
 	 */
 	public AvoiderDieWerkt(RegulatedMotor motorRight, RegulatedMotor motorLeft, RegulatedMotor motorOfHead,
-			UnregulatedMotor motorOfGrip, ColorSensor colorSensor, EV3IRSensor infraRedSensor) {
+			UnregulatedMotor motorOfGrip, ColorSensor colorSensor, EV3IRSensor infraredSensor) {
 		super();
 		AvoiderDieWerkt.motorRight = motorRight;
 		AvoiderDieWerkt.motorLeft = motorLeft;
 		AvoiderDieWerkt.motorOfHead = motorOfHead;
 		AvoiderDieWerkt.motorOfGrip = motorOfGrip;
 		AvoiderDieWerkt.colorSensor = colorSensor;
-		AvoiderDieWerkt.infraredSensor = infraRedSensor;
+		AvoiderDieWerkt.infraredSensor = infraredSensor;
 	}
 
 	public AvoiderDieWerkt(RegulatedMotor motorRight, RegulatedMotor motorLeft, RegulatedMotor motorOfHead,
-			UnregulatedMotor motorOfGrip, EV3IRSensor infraRedSensor) {
-		this(motorRight, motorLeft, motorOfHead, motorOfGrip, null, infraRedSensor);
+			UnregulatedMotor motorOfGrip, EV3IRSensor infraredSensor) {
+		this(motorRight, motorLeft, motorOfHead, motorOfGrip, null, infraredSensor);
 	}
 
 	public AvoiderDieWerkt() {
@@ -75,13 +75,13 @@ public class AvoiderDieWerkt {
 	}
 
 	public void useObjectAvoider(RegulatedMotor motorRight, RegulatedMotor motorLeft, RegulatedMotor motorOfHead,
-			UnregulatedMotor motorOfGrip, ColorSensor colorSensor, EV3IRSensor infraRedSensor) {
+			UnregulatedMotor motorOfGrip, ColorSensor colorSensor, EV3IRSensor infraredSensor) {
 		AvoiderDieWerkt.motorRight = motorRight;
 		AvoiderDieWerkt.motorLeft = motorLeft;
 		AvoiderDieWerkt.motorOfHead = motorOfHead;
 		AvoiderDieWerkt.motorOfGrip = motorOfGrip;
 		AvoiderDieWerkt.colorSensor = colorSensor;
-		AvoiderDieWerkt.infraredSensor = infraRedSensor;
+		AvoiderDieWerkt.infraredSensor = infraredSensor;
 	}
 
 	/**
@@ -94,16 +94,12 @@ public class AvoiderDieWerkt {
 		// Start every run with an empty list of tacho measurements
 		listWithTachoMeasurements.clear();
 
-		// Flash green light and make sound when ready, then wait for press
-		Button.LEDPattern(4);
-		Sound.beepSequenceUp();
-		System.out.println("Initiating Follow Beacon!");
-		Button.waitForAnyPress();
+		makeReadySignals("Let me avoid some objects!");
 
 		// Call the three relevant submethods
 		startObjectAvoider();
 		scoreAGoal();
-		comeBack(listWithTachoMeasurements);
+		comeBack(listWithTachoMeasurements, numberOfObjectsToBePassed);
 
 		// Close all resources
 		motorLeft.close();
@@ -158,14 +154,10 @@ public class AvoiderDieWerkt {
 	}
 
 	public void playWithMarvin(long forHowLong) {
+		makeReadySignals("Play with Marvin!");
+
 		// Start every run with an empty list of tacho measurements
 		listWithTachoMeasurements.clear();
-
-		// Flash green light and make sound when ready, then wait for press
-		Button.LEDPattern(4);
-		Sound.beepSequenceUp();
-		System.out.println("Initiating Follow Beacon!");
-		Button.waitForAnyPress();
 
 		// The robot goes at relatively fast speed, i.e. not slow but not fast either
 		motorLeft.setSpeed(REASONABLE_SPEED);
@@ -189,7 +181,7 @@ public class AvoiderDieWerkt {
 		motorLeft.close();
 		motorRight.close();
 		motorOfHead.close();
-		infraredSensor.close();
+		infraerdSensor.close();
 	}
 
 	/**
@@ -335,37 +327,58 @@ public class AvoiderDieWerkt {
 	}
 
 	/**
+	 * This method uses the list with tacho-measurements to make the robot drive the
+	 * same path as it did while avoiding objects, but now backwards. This method
+	 * works if the number of objects to be passed is one or two, but can easily be
+	 * re-written to generalize it to any number of passed objects. Essentially, the
+	 * robot is playing all the elements in the ArrayList 'backwards', i.e. from 11
+	 * (in case of two objects) or 5 (in case of one object) back to zero. The
+	 * left/right is obviously in opposite direction as well; meaning, for example,
+	 * that the robot started (when finding its first object) with going left, so it
+	 * will end (on its way back) with going right.
 	 * 
-	 * @param lijstMetTachoMetingen
+	 * @param listWithTachoMeasurements
+	 *            List with all the stored tacho-measurements.
 	 */
 
-	private static void comeBack(ArrayList<Integer> lijstMetTachoMetingen) {
-		motorLeft.setSpeed(800);
-		motorRight.setSpeed(800);
-		robotTurns90DegreesTo("R");
-		motorLeft.rotate(-(lijstMetTachoMetingen.get(10) + lijstMetTachoMetingen.get(8)), true); // 0
-		motorRight.rotate(-(lijstMetTachoMetingen.get(11) + lijstMetTachoMetingen.get(9)), true); // 1
-		motorLeft.waitComplete();
-		motorRight.waitComplete();
+	private static void comeBack(ArrayList<Integer> listWithTachoMeasurements, int numberOfObjectsToBePassed) {
+		final int FASTER_SPEED = 800;
+
+		if (numberOfObjectsToBePassed == 2) {
+			motorLeft.setSpeed(FASTER_SPEED);
+			motorRight.setSpeed(FASTER_SPEED);
+			robotTurns90DegreesTo("R");
+			motorLeft.rotate(-(listWithTachoMeasurements.get(10) + listWithTachoMeasurements.get(8)), true);
+			motorRight.rotate(-(listWithTachoMeasurements.get(11) + listWithTachoMeasurements.get(9)), true);
+			motorLeft.waitComplete();
+			motorRight.waitComplete();
+			robotTurns90DegreesTo("L");
+			motorLeft.rotate(-listWithTachoMeasurements.get(6), true);
+			motorRight.rotate(-listWithTachoMeasurements.get(7), true);
+			motorLeft.waitComplete();
+			motorRight.waitComplete();
+		}
+
+		motorLeft.setSpeed(FASTER_SPEED);
+		motorRight.setSpeed(FASTER_SPEED);
 		robotTurns90DegreesTo("L");
-		motorLeft.rotate(-lijstMetTachoMetingen.get(6), true); // 0
-		motorRight.rotate(-lijstMetTachoMetingen.get(7), true); // 1
-		motorLeft.waitComplete();
-		motorRight.waitComplete();
-		robotTurns90DegreesTo("L");
-		motorLeft.rotate(-(lijstMetTachoMetingen.get(4) + lijstMetTachoMetingen.get(2)), true); // 0
-		motorRight.rotate(-(lijstMetTachoMetingen.get(5) + lijstMetTachoMetingen.get(3)), true); // 1
+		motorLeft.rotate(-(listWithTachoMeasurements.get(4) + listWithTachoMeasurements.get(2)), true);
+		motorRight.rotate(-(listWithTachoMeasurements.get(5) + listWithTachoMeasurements.get(3)), true);
 		motorLeft.waitComplete();
 		motorRight.waitComplete();
 		robotTurns90DegreesTo("R");
-		motorLeft.rotate(-lijstMetTachoMetingen.get(0), true);
-		motorRight.rotate(-lijstMetTachoMetingen.get(1), true);
+		motorLeft.rotate(-listWithTachoMeasurements.get(0), true);
+		motorRight.rotate(-listWithTachoMeasurements.get(1), true);
 		motorLeft.waitComplete();
 		motorRight.waitComplete();
+
 	}
 
 	/**
-	 * This method calculates the
+	 * This method uses the list with tacho-measurements to make the robot drive the
+	 * same path as it did in the playMode, but now backwards. This method works for
+	 * any play-time and any path chosen by the person playing with the robot. This
+	 * methods works essentially in the same way as the comeBack-method.
 	 * 
 	 * @param lijstMetTachoMetingen
 	 */
@@ -375,20 +388,26 @@ public class AvoiderDieWerkt {
 		// Moving to an object and driving past it, adds two times two measurements to
 		// the list with measurements; hence, one complete round of playing equals four
 		// measurements
-		int numberOfPlayingRounds = lijstMetTachoMetingen.size() / 4;
+		final int MEASUREMENTS_PER_ROUND = 4;
+		final int FASTER_SPEED = 800;
+		int numberOfPlayingRounds = lijstMetTachoMetingen.size() / MEASUREMENTS_PER_ROUND;
 		for (int round = numberOfPlayingRounds; round > 0; round--) {
 			for (int step = 1; step <= 3; step += 2) {
-				motorLeft.setSpeed(800);
-				motorRight.setSpeed(800);
+				motorLeft.setSpeed(FASTER_SPEED);
+				motorRight.setSpeed(FASTER_SPEED);
 				robotTurns90DegreesTo("R");
-				motorLeft.rotate(-(lijstMetTachoMetingen.get(round * 4 - step)), true);
-				motorRight.rotate(-(lijstMetTachoMetingen.get(round * 4 - step)), true);
+				motorLeft.rotate(-(lijstMetTachoMetingen.get(round * MEASUREMENTS_PER_ROUND - step)), true);
+				motorRight.rotate(-(lijstMetTachoMetingen.get(round * MEASUREMENTS_PER_ROUND - step)), true);
 				motorLeft.waitComplete();
 				motorRight.waitComplete();
 			}
 		}
 
 	}
+
+	/**
+	 * The robot will open its grip (dropping whatever is in it) and close it again.
+	 */
 
 	public static void scoreAGoal() {
 		balletjeGrijper.useGrip(motorOfGrip);
@@ -400,57 +419,61 @@ public class AvoiderDieWerkt {
 		// motorRight.waitComplete();
 	}
 
-	public void walkThroughEasyLabyrinth() {
-		while (Button.ESCAPE.isUp()) {
-			keepCalmlyGoingForward(UP_TO_OBJECT);
-			robotTurns90DegreesTo("L");
-			SensorMode distanceMeasurer = infraredSensor.getDistanceMode();
-			float[] sample = new float[distanceMeasurer.sampleSize()];
-			distanceMeasurer.fetchSample(sample, 0);
-			int measuredDistance = (int) sample[0];
-			if (measuredDistance < SMALLEST_DISTANCE_TO_OBJECT) {
-				robotTurns90DegreesTo("L");
-				robotTurns90DegreesTo("L");
-			}
-
-		}
-	}
-
+	/**
+	 * The robot walks through a labyrinth by essentially doing three things: 1.
+	 * Check after every 'step' whether the road to the left is free. If it is, then
+	 * go left. 2. If the road to the left is not free, then check if going
+	 * forward/straight is free. If it is, then go forward. 3. If the road forward
+	 * is also not free, then the robot will turn 90 degrees to the right and
+	 * continue with point 1. again. This of course means that one wall is checked
+	 * twice.
+	 */
 	public void walkThroughRealLabyrinth() {
-		// Flash green light and make sound when ready, then wait for press
-		Button.LEDPattern(4);
-		Sound.beepSequenceUp();
-		System.out.println("Initiating Follow Beacon!");
-		Button.waitForAnyPress();
-		boolean klaar = false;
+		// This variable has no function in the current design, but can be used to make
+		// the robot stop at the end of the labyrinth in an elegant way, for example by
+		// detecting (with a color sensor) a white line (in which case this variable
+		// should switch to true and the robot will stop moving).
+		boolean done = false;
+		// This is the distance the robot covers after each time it checks whether going
+		// forward is possible, expressed as rotations of the regular motor.
 		final int STEP = 400;
+		// This is the distance the robot covers when it sees the road to the left is
+		// free, expressed as rotations of the regular motor.
 		final int BIG_STEP = 660;
-		while (!klaar && Button.ESCAPE.isUp()) {
+
+		makeReadySignals("Labyrinth: I'll find the exit!");
+
+		while (!done && Button.ESCAPE.isUp()) {
 			if (leftFree()) {
-				motorLeft.rotate(BIG_STEP, true);
-				motorRight.rotate(BIG_STEP, true);
-				motorLeft.waitComplete();
-				motorRight.waitComplete();
+				// This step is needed to make sure the robot has enough room to enter the road,
+				// i.e. to make sure that the left part of the robot will not crash into a wall.
+				makeStep(BIG_STEP);
 				robotTurns90DegreesTo("L");
-				motorLeft.rotate(BIG_STEP, true);
-				motorRight.rotate(BIG_STEP, true);
-				motorLeft.waitComplete();
-				motorRight.waitComplete();
+				// Now the robot 'steps into' the free road. A big step here avoids that the
+				// robot will not go into the free road far enough, since this would imply that
+				// the robot will after *not completely* going into the road, will check whether
+				// 'left is free' and will see the (free) road it just came from.
+				makeStep(BIG_STEP);
 			} else if (straightOnFree()) {
-				motorLeft.rotate(STEP, true);
-				motorRight.rotate(STEP, true);
-				motorLeft.waitComplete();
-				motorRight.waitComplete();
+				makeStep(STEP);
 			} else {
 				robotTurns90DegreesTo("R");
 			}
-
 		}
 		motorRight.close();
 		motorLeft.close();
-		
+
 	}
 
+	/**
+	 * This method checks whether the road to the left is free by moving the head of
+	 * the robot to the left and then checking the distance as measured by the
+	 * robot's infrared sensor. It's important that the head moves back straight
+	 * afterwards, since the next step will be to check whether forward/straight-on
+	 * is free.
+	 * 
+	 * @return True if the road to the left is free, false otherwise.
+	 */
 	public boolean leftFree() {
 		headTurns90DegreesTo("L");
 		int measurement = getMeasurement();
@@ -458,14 +481,57 @@ public class AvoiderDieWerkt {
 		return (measurement > SMALLEST_DISTANCE_TO_OBJECT);
 	}
 
+	/**
+	 * This method checks whether the road in front of it is free.
+	 * 
+	 * @return True if the road is free, false otherwise.
+	 */
+
 	public boolean straightOnFree() {
-		return (getMeasurement() > SMALLEST_DISTANCE_TO_OBJECT * 0.7);
+		double correctionFactor = 0.7;
+		return (getMeasurement() > SMALLEST_DISTANCE_TO_OBJECT * correctionFactor);
 	}
 
+	/**
+	 * This method creates one measurement of the distance in front of the infrared
+	 * sensor.
+	 * 
+	 * @return The distance as measured by the infrared sensor.
+	 */
 	public int getMeasurement() {
 		SensorMode distanceMeasurer = infraredSensor.getDistanceMode();
 		float[] sample = new float[distanceMeasurer.sampleSize()];
 		distanceMeasurer.fetchSample(sample, 0);
 		return (int) sample[0];
+	}
+
+	/**
+	 * This method allows the robot to make one step of a give size.
+	 * 
+	 * @param stepSize
+	 *            The size of the step to be made, expressed as rotations of the
+	 *            regulated motor.
+	 */
+	public void makeStep(int stepSize) {
+		motorLeft.rotate(stepSize, true);
+		motorRight.rotate(stepSize, true);
+		motorLeft.waitComplete();
+		motorRight.waitComplete();
+	}
+
+	/**
+	 * With this method, the robot lets some green lights flash, makes some noises
+	 * and then waits for a button to be pressed while a specified message is shown.
+	 * 
+	 * @param message
+	 *            The messaged to be shown on the screen of the robot while waiting
+	 *            for the user of the robot to press on a button to start the robot.
+	 */
+
+	public void makeReadySignals(String message) {
+		Button.LEDPattern(4);
+		Sound.beepSequenceUp();
+		System.out.println(message);
+		Button.waitForAnyPress();
 	}
 }
