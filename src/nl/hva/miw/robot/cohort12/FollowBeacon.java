@@ -92,7 +92,7 @@ public class FollowBeacon {
 		Button.waitForAnyPress(); // wait for the user to press any button
 		
 		// start playing the Super Mario tune/theme song
-//		newMario.start();
+		newMario.start();
 
 		while (!ready) {
 			// reads bearing (direction) and distance every second
