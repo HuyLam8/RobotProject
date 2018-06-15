@@ -181,7 +181,7 @@ public class AvoiderDieWerkt {
 		motorLeft.close();
 		motorRight.close();
 		motorOfHead.close();
-		infraerdSensor.close();
+		infraredSensor.close();
 	}
 
 	/**
